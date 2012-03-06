@@ -2,3 +2,11 @@ This is the planner for chip's Challange
 
 Right now it is mostlly pddl files which can be solve with fast downward
 
+Example usage
+
+python pddlgen.py > cc_hazard.pddl
+
+cd <fast downard>/src
+translate/translate.py ~/src/chips/planner/pddl/cc_hazard.pddl 
+preprocess/preprocess < output.sas 
+search/downward --search "astar(blind())" < output
