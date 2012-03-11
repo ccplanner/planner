@@ -16,4 +16,7 @@ rm sas_plan
 translate/translate.py tmp-domain.pddl tmp-problem.pddl
 preprocess/preprocess < output.sas
 search/downward --search "astar(blind())" < output
+echo ""
+echo "The plan:"
+cat sas_plan | tr ')' ' ' | cut -d ' ' -f 5 | sed 's/dir-//g'
 cd -
