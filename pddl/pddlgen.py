@@ -73,6 +73,22 @@ def produce_predicates( board ):
 				print "(water pos-%d-%d)" % (i,j)
 			elif top == '&':
 				print "(fire pos-%d-%d)" % (i,j)
+			elif top == 'A':
+				print "(blue-key pos-%d-%d)" % (i,j)
+			elif top == 'B':
+				print "(red-key pos-%d-%d)" % (i,j)
+			elif top == 'C':
+				print "(yellow-key pos-%d-%d)" % (i,j)
+			elif top == 'D':
+				print "(blue-door pos-%d-%d)" % (i,j)
+			elif top == 'F':
+				print "(red-door pos-%d-%d)" % (i,j)
+			elif top == 'G':
+				print "(green-door pos-%d-%d)" % (i,j)
+			elif top == 'I':
+				print "(yellow-door pos-%d-%d)" % (i,j)
+			elif top == 'J':
+				print "(green-key pos-%d-%d)" % (i,j)
 			if i != 0:
 				print "(MOVE-DIR pos-%d-%d pos-%d-%d dir-down)" % (i-1,j, i,j)
 				print "(MOVE-DIR pos-%d-%d pos-%d-%d dir-up)" % (i,j, i-1,j)
@@ -156,8 +172,30 @@ hints="""# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 """
 
+#A	blue key
+#B	red key
+#C	yellow key
+#D	blue door
+#F	red door
+#G	green door
+#I	yellow door
+#J	green key
+
+keys="""# # # # # # # # #
+# # $ # $ # A $ #
+# # B # C #     #
+# # D # F #     #
+# @             #
+# # G # I # G # #
+# #   # J #   H #
+# # $ # $ # H E #
+# # # # # # # # #
+"""
+
 #produce_problem( proc_text(easy), 0 )
 #produce_problem( proc_text(chips), 3 )
 #produce_problem( proc_text(pie), 5 )
-#produce_problem( proc_text(hazard), 4 )
-produce_problem( proc_text(hints), 0 )
+produce_problem( proc_text(hazard), 4 )
+#produce_problem( proc_text(hints), 0 )
+#produce_problem( proc_text(keys), 5 )
+
