@@ -1,2 +1,15 @@
 *.pyc
 *.swp
+*.pddl
+
+# ignore levelset dirs
+data
+res
+sets
+
+# ignore files generate by planning
+output
+output.sas
+plan_numbers_and_cost
+sas_plan
+elapsed.time

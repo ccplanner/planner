@@ -1,4 +1,19 @@
-This is the planner for chip's Challange
+This is the planner for Chip's Challange
+
+This requires the tworld_py interface and should be updated with it.  Also,
+as a part of that we need data, sets, and res directories from the tile world
+source code, or from the levelsets repository.
+
+set that up with (or similar)
+$ ln -s ../levelsets/data .
+$ ln -s ../levelsets/sets .
+$ ln -s ../tworld_py/res .
+
+then run with:
+$ python run_agent.py
+
+at this point you still have to provide the first move your self, but after that
+the planner is called every turn.
 
 Right now it is mostlly pddl files which can be solve with fast downward
 
