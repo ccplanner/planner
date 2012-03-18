@@ -4,7 +4,7 @@ if [ -z "$FAST_DOWNWARD_HOME" ]; then
 fi
     
 if [ -z "$2" ]; then
-    echo "usage fd_run.sh <domain pddl file> <problem pddl file>";
+    echo "usage: fd_run.sh <domain pddl file> <problem pddl file>";
     exit -1
 fi
 
