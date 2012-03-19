@@ -6,13 +6,13 @@ import downward
 
 def translate_move( move):
     '''translate a move for fast downward to tile world'''
-    if "up" in move:
+    if "west" in move:
        return tw.WEST
-    if "down" in move:
+    if "east" in move:
        return tw.EAST
-    if "right" in move:
+    if "south" in move:
        return tw.SOUTH
-    if "left" in move:
+    if "north" in move:
        return tw.NORTH
     assert "should never get here"
 
@@ -41,10 +41,10 @@ def produce_problem( out ):
 
 def produce_objects( out, max_num ):
     print >> out, """(:objects
-    dir-down - direction
-    dir-left - direction
-    dir-right - direction
-    dir-up - direction
+    dir-east - direction
+    dir-north - direction
+    dir-south - direction
+    dir-west - direction
     player-01 - player"""
     produce_numbers( out, max_num )
     produce_locations( out, 32, 32 )
@@ -94,11 +94,11 @@ def produce_predicates( out, x_max, y_max ):
             elif top == tw.Fire:
                 print >> out, "(fire pos-%d-%d)" % (i,j)
             if i != 0:
-                print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-down)" % (i-1,j, i,j)
-                print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-up)" % (i,j, i-1,j)
+                print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-east)" % (i-1,j, i,j)
+                print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-west)" % (i,j, i-1,j)
             if j != 0:
-                print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-right)" % (i,j-1, i,j)
-                print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-left)" % (i,j, i,j-1)
+                print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-south)" % (i,j-1, i,j)
+                print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-north)" % (i,j, i,j-1)
 
 def produce_goal( out ):
     ''' product locations'''
