@@ -64,6 +64,7 @@ def produce_init( out, max_num ):
     """Produce intial state"""
     print >> out, """(:init"""
     print >> out, "(chips-left n%d)" % tw.chips_needed()
+    print >> out, "(switched-walls-open n0)" 
     produce_succesors(out, max_num) 
     produce_predicates(out, 32, 32)
     print >> out, ")"
@@ -77,14 +78,27 @@ def produce_predicates( out, x_max, y_max ):
     ''' produce locations'''
     for i in range( x_max ):
         for j in range( y_max ):
+	    ################
+	    # TODO: improve this logic to be more readable
+	    # and maintinable
+	    #################
             top, bot = tw.get_tile(i,j)
             if top == tw.Empty or top == tw.Exit or top == tw.HintButton:
                 print >> out, "(floor pos-%d-%d)" % (i,j)
             elif top == tw.Socket:
                 print >> out, "(socket pos-%d-%d)" % (i,j)
             elif top in (tw.Chip_North, tw.Chip_West, tw.Chip_South, tw.Chip_East):
-                print >> out, "(floor pos-%d-%d)" % (i,j)
                 print >> out, "(at player-01 pos-%d-%d)" % (i,j)
+		if bot == tw.Empty or bot == tw.Exit or bot == tw.HintButton:
+		    print >> out, "(floor pos-%d-%d)" % (i,j)
+		elif bot == tw.Wall:
+		    print >> out, "(wall pos-%d-%d)" % (i,j)
+		elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
+		    print >> out, "(switch-wall-open pos-%d-%d)" % (i,j)
+		elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
+		    print >> out, "(switch-wall-closed pos-%d-%d)" % (i,j)
+		elif top == tw.Button_Green or bot == tw.Button_Green:
+		    print >> out, "(green-button pos-%d-%d)" % (i,j)
             elif top == tw.ICChip:
                 print >> out, "(chip pos-%d-%d)" % (i,j)
             elif top == tw.Wall:
@@ -93,6 +107,12 @@ def produce_predicates( out, x_max, y_max ):
                 print >> out, "(water pos-%d-%d)" % (i,j)
             elif top == tw.Fire:
                 print >> out, "(fire pos-%d-%d)" % (i,j)
+	    elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
+                print >> out, "(switch-wall-open pos-%d-%d)" % (i,j)
+	    elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
+                print >> out, "(switch-wall-closed pos-%d-%d)" % (i,j)
+	    elif top == tw.Button_Green or bot == tw.Button_Green:
+                print >> out, "(green-button pos-%d-%d)" % (i,j)
             if i != 0:
                 print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-east)" % (i-1,j, i,j)
                 print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-west)" % (i,j, i-1,j)

@@ -18,6 +18,9 @@
                (yellow-door ?l - location)
                (green-key ?l - location)
                (green-door ?l - location)
+               (switch-wall-open ?l - location)
+               (switch-wall-closed ?l - location)
+	       (switched-walls-open ?x - number )
                (successor ?n1 - number ?n0 - number)
                (chips-left ?n - number)
                (MOVE-DIR ?from ?to - location ?dir - direction))
@@ -47,6 +50,57 @@
                       )
    )
 
+;; The switch walls
+  (:action move-switch-wall-open
+   :parameters (?p - player ?from ?to - location ?dir - direction)
+   :precondition (and (at ?p ?from)
+                      (switch-wall-open ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+		      (switched-walls-open n0)
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      )
+   )
+
+  (:action move-switch-wall-closed
+   :parameters (?p - player ?from ?to - location ?dir - direction)
+   :precondition (and (at ?p ?from)
+                      (switch-wall-closed ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+		      (not (switched-walls-open n0))
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      )
+   )
+
+  (:action move-toggle-walls-open
+   :parameters (?p - player ?from ?to - location ?dir - direction)
+   :precondition (and (at ?p ?from)
+                      (green-button ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+		      (not (switched-walls-open n0))
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+		      (switched-walls-open n0)
+                      )
+   )
+
+  (:action move-toggle-walls-closed
+   :parameters (?p - player ?from ?to - location ?dir - direction)
+   :precondition (and (at ?p ?from)
+                      (green-button ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+		      (switched-walls-open n0)
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+		      (not (switched-walls-open n0))
+                      )
+  )
+   
 ;; handle having n0 chips
 ;; maybe make zero a succesor to itself
   (:action move-chip
