@@ -6,6 +6,8 @@ import downward
 
 def translate_move( move):
     '''translate a move for fast downward to tile world'''
+    if "slip" in move:
+       return tw.WAIT
     if "west" in move:
        return tw.WEST
     if "east" in move:
@@ -85,20 +87,36 @@ def produce_predicates( out, x_max, y_max ):
             top, bot = tw.get_tile(i,j)
             if top == tw.Empty or top == tw.Exit or top == tw.HintButton:
                 print >> out, "(floor pos-%d-%d)" % (i,j)
+            elif top in (tw.HiddenWall_Perm, tw.HiddenWall_Temp, 
+                         tw.BlueWall_Real, tw.BlueWall_Fake):
+                print >> out, "(floor pos-%d-%d)" % (i,j)
             elif top == tw.Socket:
                 print >> out, "(socket pos-%d-%d)" % (i,j)
             elif top in (tw.Chip_North, tw.Chip_West, tw.Chip_South, tw.Chip_East):
                 print >> out, "(at player-01 pos-%d-%d)" % (i,j)
-		if bot == tw.Empty or bot == tw.Exit or bot == tw.HintButton:
-		    print >> out, "(floor pos-%d-%d)" % (i,j)
-		elif bot == tw.Wall:
-		    print >> out, "(wall pos-%d-%d)" % (i,j)
-		elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
-		    print >> out, "(switch-wall-open pos-%d-%d)" % (i,j)
-		elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
-		    print >> out, "(switch-wall-closed pos-%d-%d)" % (i,j)
-		elif top == tw.Button_Green or bot == tw.Button_Green:
-		    print >> out, "(green-button pos-%d-%d)" % (i,j)
+                if top == tw.Chip_East:
+                    chip_dir = "dir-east"
+                elif top == tw.Chip_West:
+                    chip_dir = "dir-west"
+                elif top == tw.Chip_South:
+                    chip_dir = "dir-south"
+                elif top == tw.Chip_North:
+                    chip_dir = "dir-north"
+
+                if bot == tw.Empty or bot == tw.Exit or bot == tw.HintButton:
+                    print >> out, "(floor pos-%d-%d)" % (i,j)
+                elif bot == tw.Wall:
+                    print >> out, "(wall pos-%d-%d)" % (i,j)
+                elif bot == tw.Ice:
+                    print >> out, "(ice pos-%d-%d)" % (i,j)
+                    print >> out, "(chip-state slipping)"
+                    print >> out, "(slipping-dir %s)" % chip_dir
+                elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
+                    print >> out, "(switch-wall-open pos-%d-%d)" % (i,j)
+                elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
+                    print >> out, "(switch-wall-closed pos-%d-%d)" % (i,j)
+                elif top == tw.Button_Green or bot == tw.Button_Green:
+                    print >> out, "(green-button pos-%d-%d)" % (i,j)
             elif top == tw.ICChip:
                 print >> out, "(chip pos-%d-%d)" % (i,j)
             elif top == tw.Wall:

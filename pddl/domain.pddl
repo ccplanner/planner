@@ -30,6 +30,7 @@
    :precondition (and (at ?p ?from)
                       (floor ?to)
                       (MOVE-DIR ?from ?to ?dir)
+                      (not (chip-state slipping))
                       )
    :effect       (and (not (at ?p ?from))
                       (at ?p ?to)
