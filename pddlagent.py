@@ -78,10 +78,10 @@ def produce_predicates( out, x_max, y_max ):
     ''' produce locations'''
     for i in range( x_max ):
         for j in range( y_max ):
-	    ################
-	    # TODO: improve this logic to be more readable
-	    # and maintinable
-	    #################
+            ################
+            # TODO: improve this logic to be more readable
+            # and maintinable
+            #################
             top, bot = tw.get_tile(i,j)
             if top == tw.Empty or top == tw.Exit or top == tw.HintButton:
                 print >> out, "(floor pos-%d-%d)" % (i,j)
@@ -107,11 +107,13 @@ def produce_predicates( out, x_max, y_max ):
                 print >> out, "(water pos-%d-%d)" % (i,j)
             elif top == tw.Fire:
                 print >> out, "(fire pos-%d-%d)" % (i,j)
-	    elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
+            elif top == tw.Ice:
+                print >> out, "(ice pos-%d-%d)" % (i,j)
+            elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
                 print >> out, "(switch-wall-open pos-%d-%d)" % (i,j)
-	    elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
+            elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
                 print >> out, "(switch-wall-closed pos-%d-%d)" % (i,j)
-	    elif top == tw.Button_Green or bot == tw.Button_Green:
+            elif top == tw.Button_Green or bot == tw.Button_Green:
                 print >> out, "(green-button pos-%d-%d)" % (i,j)
             if i != 0:
                 print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-east)" % (i-1,j, i,j)
