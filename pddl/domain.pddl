@@ -220,9 +220,14 @@
                       (at ?p ?to)
                       (not (door ?to ?color))
                       (floor ?to)
-                      (when (not (= ?color green))
-                        (not (has-keys ?color ?okeys))
-                        (has-keys ?color ?nkeys))
+                      ;; This is needed to handle the special case of 
+                      ;; green keys and doors, but it seems to cause an 
+                      ;; assertion error in FD
+                      ;;(when (not (= ?color green))
+                        ;;(not (has-keys ?color ?okeys))
+                        ;;(has-keys ?color ?nkeys))
+                      (not (has-keys ?color ?okeys))
+                      (has-keys ?color ?nkeys)
                       )
    )
 )
