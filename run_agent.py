@@ -21,4 +21,5 @@ def wrapper_agent():
     return last_move
 
 tworld.set_agent( wrapper_agent )
-tworld.load_level('classical.dac',20)
+#tworld.load_level('classical.dac',20)
+tworld.load_level('easy.dac',20)
