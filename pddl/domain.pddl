@@ -3,21 +3,16 @@
 
 (define (domain chips-challenge)
   (:requirements :typing )
-  (:types thing location direction number have-blue have-red have-yellow have-green - object
+  (:types thing location direction number color - object
           player - thing)
   (:predicates (floor ?l - location)
                (at ?t - thing ?l - location)
                (chip ?l - location)
                (socket ?l - location)
                (wall ?l - location)
-               (blue-key ?l - location)
-               (blue-door ?l - location)
-               (red-key ?l - location)
-               (red-door ?l - location)
-               (yellow-key ?l - location)
-               (yellow-door ?l - location)
-               (green-key ?l - location)
-               (green-door ?l - location)
+               (has-keys ?c - color ?n - number)
+               (key ?l - location ?c - color)
+               (door ?l - location ?c - color)
                (switch-wall-open ?l - location)
                (switch-wall-closed ?l - location)
                (switched-walls-open ?x - number )
@@ -185,18 +180,49 @@
                       )
    )
 
-  ;; NOT FINISHED
-  (:action move-blue-key
-   :parameters (?p - player ?from ?to - location ?dir - direction)
+;; Keys
+
+;; Move to a tile containing a ?color key, having had ?okeys ?color keys already.
+;; TODO NOT TESTED
+;; TODO Need to increase 'successor' numbers to accomodate large numbers of keys?
+  (:action move-key
+   :parameters (?p - player ?from ?to - location ?dir - direction ?color - color ?okeys ?nkeys - number)
    :precondition (and (at ?p ?from)
-                      (blue-key ?to)
+                      (key ?to ?color)
                       (MOVE-DIR ?from ?to ?dir)
+                      (has-keys ?color ?okeys)
+                      (successor ?okeys ?nkeys)
                       )
    :effect       (and (not (at ?p ?from))
                       (at ?p ?to)
-                      (not (blue-key ?to))
+                      (not (key ?to ?color))
                       (floor ?to)
-                      (have-blue True)
+                      (not (has-keys ?color ?okeys))
+                      (has-keys ?color ?nkeys)
+                      )
+   )
+
+;; Move to a tile containing a ?color door, having ?okeys ?color keys already.
+;; TODO NOT TESTED
+;; TODO Need to indicate to the planner special :requirement to handle 
+;; the '=' or 'when' such as 'adl?  See 'benchmarks/psr-large/domain.pddl'
+;; TODO Should colors be 'constants' instead of 'objects'?
+  (:action move-door
+   :parameters (?p - player ?from ?to - location ?dir - direction ?color - color ?okeys ?nkeys - number)
+   :precondition (and (at ?p ?from)
+                      (door ?to ?color)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (has-keys ?color ?okeys)
+                      (successor ?nkeys ?okeys)
+                      (not (has-keys ?color n0))
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      (not (door ?to ?color))
+                      (floor ?to)
+                      (when (not (= ?color green))
+                        (not (has-keys ?color ?okeys))
+                        (has-keys ?color ?nkeys))
                       )
    )
 )

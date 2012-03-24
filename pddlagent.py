@@ -47,6 +47,10 @@ def produce_objects( out, max_num ):
     dir-north - direction
     dir-south - direction
     dir-west - direction
+    red - color
+    blue - color
+    yellow - color
+    green - color
     player-01 - player"""
     produce_numbers( out, max_num )
     produce_locations( out, 32, 32 )
@@ -67,6 +71,10 @@ def produce_init( out, max_num ):
     print >> out, """(:init"""
     print >> out, "(chips-left n%d)" % tw.chips_needed()
     print >> out, "(switched-walls-open n0)" 
+    print >> out, "(has-keys red n0)" 
+    print >> out, "(has-keys blue n0)" 
+    print >> out, "(has-keys yellow n0)" 
+    print >> out, "(has-keys green n0)" 
     produce_succesors(out, max_num) 
     produce_predicates(out, 32, 32)
     print >> out, ")"
@@ -119,6 +127,22 @@ def produce_predicates( out, x_max, y_max ):
                     print >> out, "(green-button pos-%d-%d)" % (i,j)
             elif top == tw.ICChip:
                 print >> out, "(chip pos-%d-%d)" % (i,j)
+            elif top == tw.Key_Red:
+                print >> out, "(key pos-%d-%d red)" % (i,j)
+            elif top == tw.Key_Blue:
+                print >> out, "(key pos-%d-%d blue)" % (i,j)
+            elif top == tw.Key_Yellow:
+                print >> out, "(key pos-%d-%d yellow)" % (i,j)
+            elif top == tw.Key_Green:
+                print >> out, "(key pos-%d-%d green)" % (i,j)
+            elif top == tw.Door_Red:
+                print >> out, "(door pos-%d-%d red)" % (i,j)
+            elif top == tw.Door_Blue:
+                print >> out, "(door pos-%d-%d blue)" % (i,j)
+            elif top == tw.Door_Yellow:
+                print >> out, "(door pos-%d-%d yellow)" % (i,j)
+            elif top == tw.Door_Green:
+                print >> out, "(door pos-%d-%d green)" % (i,j)
             elif top == tw.Wall:
                 print >> out, "(wall pos-%d-%d)" % (i,j)
             elif top == tw.Water:
