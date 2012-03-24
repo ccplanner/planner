@@ -1,7 +1,11 @@
 #!/usr/bin/python2
 
 import os
-FAST_DOWNWARD_HOME='/home/hbullen/src/downward'
+
+var = "FAST_DOWNWARD_HOME"
+if var not in os.environ:
+    raise Exception("Please set the environment variable %s as the path to the directory containing Fast Downward." % var)
+FAST_DOWNWARD_HOME = os.environ[var]
 
 def run( pddl):
     translate( pddl )
@@ -32,3 +36,4 @@ def get_moves(plan='sas_plan'):
     return lines
 
 # run('pddl/cc-agent1.pddl')
+
