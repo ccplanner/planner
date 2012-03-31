@@ -92,8 +92,10 @@ def produce_predicates( out, x_max, y_max ):
             # TODO: improve this logic to be more readable
             # and maintinable
             #################
+            treat_as_floor = (tw.Empty, tw.Exit, tw.HintButton, tw.Wall_North, tw.Wall_South, 
+                            tw.Wall_East, tw.Wall_West, tw.Wall_Southeast, tw.Dirt, tw.Gravel)
             top, bot = tw.get_tile(i,j)
-            if top == tw.Empty or top == tw.Exit or top == tw.HintButton:
+            if top in treat_as_floor:
                 print >> out, "(floor pos-%d-%d)" % (i,j)
             elif top in (tw.HiddenWall_Perm, tw.HiddenWall_Temp, 
                          tw.BlueWall_Real, tw.BlueWall_Fake):
@@ -111,7 +113,7 @@ def produce_predicates( out, x_max, y_max ):
                 elif top == tw.Chip_North:
                     chip_dir = "dir-north"
 
-                if bot == tw.Empty or bot == tw.Exit or bot == tw.HintButton:
+                if bot in treat_as_floor:
                     print >> out, "(floor pos-%d-%d)" % (i,j)
                 elif bot == tw.Wall:
                     print >> out, "(wall pos-%d-%d)" % (i,j)
@@ -157,12 +159,39 @@ def produce_predicates( out, x_max, y_max ):
                 print >> out, "(switch-wall-closed pos-%d-%d)" % (i,j)
             elif top == tw.Button_Green or bot == tw.Button_Green:
                 print >> out, "(green-button pos-%d-%d)" % (i,j)
-            if i != 0:
+            # set up movement
+            if i != 0 and can_move_east_west(tw.get_tile(i-1,j),tw.get_tile(i,j)) :
                 print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-east)" % (i-1,j, i,j)
                 print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-west)" % (i,j, i-1,j)
-            if j != 0:
+            if j != 0 and can_move_north_south(tw.get_tile(i,j-1), tw.get_tile(i,j) ):
                 print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-south)" % (i,j-1, i,j)
                 print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-north)" % (i,j, i,j-1)
+
+def can_move_east_west( (w_top, w_bot), (e_top, e_bot) ):
+    """ if movement east to west is possible"""
+    if both_walls( (w_top, w_bot), (e_top, e_bot) ):
+        return False
+    # west does not have a blocking tile
+    if  set((w_top, w_bot)).isdisjoint( (tw.Wall_East, tw.IceWall_Southeast, tw.IceWall_Northeast, tw.Wall_Southeast) ) and \
+        set( (e_top, e_bot)).isdisjoint( (tw.Wall_West, tw.IceWall_Southwest, tw.IceWall_Northwest) ):
+        return True
+    else:
+        return False
+
+def can_move_north_south( n_tile, s_tile ):
+    """ if movement north to south is possible n_tile and s_tile are (top, bot) tuples"""
+    if both_walls( n_tile, s_tile ):
+        return False
+    if  set( n_tile).isdisjoint( (tw.Wall_South, tw.IceWall_Southeast, tw.IceWall_Southwest, tw.Wall_Southeast) ) and \
+        set( s_tile).isdisjoint( (tw.Wall_North, tw.IceWall_Northeast, tw.IceWall_Northwest) ):
+        return True
+    else:
+        return False
+
+def both_walls( (a_top, a_bot), (b_top, b_bot) ):
+    """ if both a and b are walls movement between is impossible"""
+    return (a_top == tw.Wall or a_bot == tw.Wall ) and \
+           (b_bot == tw.Wall or b_bot == tw.Wall )
 
 def produce_goal( out ):
     ''' product locations'''
