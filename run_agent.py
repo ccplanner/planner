@@ -4,22 +4,31 @@
 import pddlagent as pa
 import tworld
 
-last_pos = None
-last_move = None
-skiped_moves = 0
-def wrapper_agent():
-    '''A wrapper agent that has memory, to deal with fast ticks'''
-    global last_pos, last_move, skiped_moves
-    if skiped_moves >= 4 or tworld.chips_pos() != last_pos:
-        skiped_moves = 0
-        if tworld.get_tile( *tworld.chips_pos() )[1] == tworld.Ice:
-            return tworld.WAIT
-        last_pos= tworld.chips_pos()
-        last_move=pa.pddl_agent()
-    else:
-        skiped_moves += 1
-    return last_move
+agent = pa.cacheing_pddl_agent()
 
-tworld.set_agent( wrapper_agent )
-#tworld.load_level('classical.dac',20)
-tworld.load_level('easy.dac',20)
+class wrapper_agent:
+    def __init__(self, get_move_func ):
+        self.last_pos = None
+        self.last_move = None
+        self.skiped_moves = 0
+        self.wrapped_get_move = get_move_func
+
+    def get_move(self):
+        '''A wrapper agent that has memory, to deal with fast ticks'''
+        if self.skiped_moves >= 4 or tworld.chips_pos() != self.last_pos:
+            self.skiped_moves = 0
+            if tworld.get_tile( *tworld.chips_pos() )[1] == tworld.Ice:
+                return tworld.WAIT
+            self.last_pos= tworld.chips_pos()
+            #last_move=pa.pddl_agent()
+            self.last_move=agent.get_move()
+        else:
+            self.skiped_moves += 1
+        return self.last_move
+
+#wagent = wrapper_agent( pa.pddlagent )
+wagent = wrapper_agent( agent.get_move )
+tworld.set_agent( wagent.get_move )
+tworld.load_level('classical.dac',1)
+#tworld.load_level('CCLP3.dac',5)
+#tworld.load_level('keys.dac',1)

@@ -4,6 +4,26 @@ import tworld as tw
 import random
 import downward
 
+class cacheing_pddl_agent:
+
+    def __init__(self):
+        self.moves=[] # list of moves to carry out moves.pop() is next move
+        self.tick = 0
+
+    def get_move(self):
+        """return a move"""
+        self.tick += 1
+        if len( self.moves ) > 0:
+            return self.moves.pop()
+        pddl_file_name = 'pddl/cc-agent%d.pddl' % self.tick
+        pddl_file = open( pddl_file_name, 'w')
+        produce_problem(pddl_file)
+        pddl_file.close()
+        # get moves and translate them
+        self.moves= map( translate_move, downward.run( pddl_file_name ))
+        self.moves.reverse() # reverse to that moves.pop() returns next move
+        return self.moves.pop()
+
 def translate_move( move):
     '''translate a move for fast downward to tile world'''
     if "slip" in move:
