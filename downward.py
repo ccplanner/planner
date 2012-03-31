@@ -22,21 +22,21 @@ def run( pddl):
     print "total took: %f sec" % ( t3 - t0)
     return get_moves()
 
-#    os.remove('output')
-#    os.remove('output.sas')
-#    os.remove('sas_plan')
 
 def translate( pddl, domain = 'pddl/domain.pddl', down_home=FAST_DOWNWARD_HOME):
     ''' run fast downward translate, produces output'''
-    os.system("%s/src/translate/translate.py %s %s > /dev/null" % (down_home, domain, pddl) )
+#    os.remove('output')
+#    os.remove('output.sas')
+#    os.remove('sas_plan')
+    os.system("%s/src/translate/translate.py %s %s" % (down_home, domain, pddl) )
 
 def preprocess(sas='output.sas', down_home=FAST_DOWNWARD_HOME):
     ''' do the preporcess stuff'''
-    os.system("%s/src/preprocess/preprocess < %s > /dev/null" % (down_home, sas) )
+    os.system("%s/src/preprocess/preprocess < %s" % (down_home, sas) )
 
 def search(heurestic = "astar(blind())", problem='output', down_home=FAST_DOWNWARD_HOME):
     ''' do the search'''
-    os.system("""%s/src/search/downward --search "%s" < %s > /dev/null""" % (down_home, heurestic, problem) )
+    os.system("""%s/src/search/downward --search "%s" < %s""" % (down_home, heurestic, problem) )
 
 def get_moves(plan='sas_plan'):
     f = open(plan, 'r')
