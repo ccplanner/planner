@@ -1,6 +1,7 @@
 *.pyc
 *.swp
 *.pddl
+*.log
 
 # ignore levelset dirs
 data
