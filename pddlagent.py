@@ -239,6 +239,21 @@ def produce_predicates( out, x_max, y_max ):
                 print >> out, "(fire pos-%d-%d)" % (i,j)
             elif top == tw.Ice:
                 print >> out, "(ice pos-%d-%d)" % (i,j)
+            elif top in (tw.IceWall_Northeast, tw.IceWall_Northwest, tw.IceWall_Southeast, tw.IceWall_Southwest):
+                print >> out, "(ice-wall pos-%d-%d)" % (i,j)
+                if top == tw.IceWall_Northeast: # Open North and East
+                    # slip in going south slip out going east
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-south dir-east)" % (i,j)
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-west dir-north)" % (i,j)
+                elif top == tw.IceWall_Northwest: # Open North and West
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-south dir-west)" % (i,j)
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-east dir-north)" % (i,j)
+                elif top == tw.IceWall_Southeast: # Open South and East
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-north dir-east)" % (i,j)
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-west dir-south)" % (i,j)
+                elif top == tw.IceWall_Southwest: # Open South and West
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-north dir-west)" % (i,j)
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-east dir-south)" % (i,j)
             elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
                 print >> out, "(switch-wall-open pos-%d-%d)" % (i,j)
             elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
@@ -258,8 +273,9 @@ def can_move_east_west( (w_top, w_bot), (e_top, e_bot) ):
     if both_walls( (w_top, w_bot), (e_top, e_bot) ):
         return False
     # west does not have a blocking tile
-    if  set((w_top, w_bot)).isdisjoint( (tw.Wall_East, tw.IceWall_Southeast, tw.IceWall_Northeast, tw.Wall_Southeast) ) and \
-        set( (e_top, e_bot)).isdisjoint( (tw.Wall_West, tw.IceWall_Southwest, tw.IceWall_Northwest) ):
+    # IceWall_Southwest is open to the south and west
+    if  set((w_top, w_bot)).isdisjoint( (tw.Wall_East, tw.IceWall_Southwest, tw.IceWall_Northwest, tw.Wall_Southeast) ) and \
+        set( (e_top, e_bot)).isdisjoint( (tw.Wall_West, tw.IceWall_Southeast, tw.IceWall_Northeast) ):
         return True
     else:
         return False
@@ -268,8 +284,9 @@ def can_move_north_south( n_tile, s_tile ):
     """ if movement north to south is possible n_tile and s_tile are (top, bot) tuples"""
     if both_walls( n_tile, s_tile ):
         return False
-    if  set( n_tile).isdisjoint( (tw.Wall_South, tw.IceWall_Southeast, tw.IceWall_Southwest, tw.Wall_Southeast) ) and \
-        set( s_tile).isdisjoint( (tw.Wall_North, tw.IceWall_Northeast, tw.IceWall_Northwest) ):
+    # IceWall_Northeast is open to the north and east
+    if  set( n_tile).isdisjoint( (tw.Wall_South, tw.IceWall_Northeast, tw.IceWall_Northwest, tw.Wall_Southeast) ) and \
+        set( s_tile).isdisjoint( (tw.Wall_North, tw.IceWall_Southeast, tw.IceWall_Southwest) ):
         return True
     else:
         return False
