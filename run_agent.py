@@ -16,16 +16,22 @@ class wrapper_agent:
 
     def get_move(self):
         '''A wrapper agent that has memory, to deal with fast ticks'''
-        if self.skiped_moves >= 4 or tworld.chips_pos() != self.last_pos:
-            self.skiped_moves = 0
-            if tworld.get_tile( *tworld.chips_pos() )[1] == tworld.Ice:
-                return tworld.WAIT
-            self.last_pos= tworld.chips_pos()
-            #last_move=pa.pddl_agent()
-            self.last_move=agent.get_move()
-        else:
-            self.skiped_moves += 1
-        return self.last_move
+        try:
+            if self.skiped_moves >= 4 or tworld.chips_pos() != self.last_pos:
+                self.skiped_moves = 0
+                if tworld.get_tile( *tworld.chips_pos() )[1] == tworld.Ice:
+                    return tworld.WAIT
+                self.last_pos= tworld.chips_pos()
+                #last_move=pa.pddl_agent()
+                self.last_move=agent.get_move()
+            else:
+                self.skiped_moves += 1
+            return self.last_move
+        except Exception, e:
+            print "EXCEPTION:"
+            print e
+            print "giving up and exiting, but you can try another level"
+            sys.exit()
 
 #wagent = wrapper_agent( pa.pddlagent )
 wagent = wrapper_agent( agent.get_move )
