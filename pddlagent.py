@@ -5,6 +5,7 @@ import random
 import downward
 import ast
 import os
+import re
 
 var = "PDDL_AGENT_VERBOSE"
 verbose = False
@@ -27,10 +28,22 @@ class cacheing_pddl_agent:
             move = self.moves.pop()
             if verbose: print "agent (cached move: %s)" % translate_tw_move(move)
             return move
+        if verbose: print "agent (no cached moves)" 
         pddl_file_name = 'pddl/cc-agent%d.pddl' % self.tick
         pddl_file = open( pddl_file_name, 'w')
         produce_problem(pddl_file)
         pddl_file.close()
+        if verbose:
+            pddl_file = open( pddl_file_name, 'r')
+            print "agent (printing problem PDDL, but skipping moves and walls and such)"
+            depth = 0
+            for line in pddl_file: 
+                if re.search(r"^\(MOVE-DIR|^\(floor pos-|^pos-.*location$|^\(wall pos.*\)$", line) is None: 
+                    opens = len(re.findall(r"\(",line))
+                    closes = len(re.findall(r"\)",line))
+                    if line.strip() != "": print "  " + ("  " * depth) + line.strip()
+                    depth += opens - closes
+            pddl_file.close()
         # get moves and translate them
         if verbose: print "agent (running planner)" 
         self.moves= map( translate_move, downward.run( pddl_file_name ))
@@ -41,25 +54,27 @@ class cacheing_pddl_agent:
         return move
 
 def print_game_status():
-    print "game (printing board)"
-    print_board(9,9)
+    print "game (printing board, top tiles only)"
+    print_board(9,9,False)
     x,y = tw.chips_pos()
     print "game (Keys R:%d B:%d Y:%d G:%d)" % tw.get_keys()
     print "game (Boots Ice:%d Suction:%d Fire:%d Water:%d)" % tw.get_boots()
     print "game (Player: %d,%d)" % (x, y)
     print "game (Chips left: %d)" % tw.chips_needed()
 
-def print_board(x_max=32,y_max=32):
+def print_board(x_max=32,y_max=32,print_bottom=True):
     """note x_max and y_max are then number of tiles printed in that 
         direction"""
     for y in range(y_max):
+        print "  ", 
         for x in range(x_max):
             print "%2x|" % tw.get_tile(x,y)[0],
         print "\n",
-        for x in range(x_max):
-            print "%2x|" % tw.get_tile(x,y)[1],
-        print "\n",
-    #print "\n"
+        if print_bottom:
+            print "  ",
+            for x in range(x_max):
+                print "%2x|" % tw.get_tile(x,y)[1],
+            print "\n",
 
 def translate_move( move):
     '''translate a move for fast downward to tile world'''
@@ -142,10 +157,10 @@ def produce_init( out, max_num ):
     print >> out, """(:init"""
     print >> out, "(chips-left n%d)" % tw.chips_needed()
     print >> out, "(switched-walls-open n0)" 
-    print >> out, "(has-keys red n0)" 
-    print >> out, "(has-keys blue n0)" 
-    print >> out, "(has-keys yellow n0)" 
-    print >> out, "(has-keys green n0)" 
+    print >> out, "(has-keys red n%d)" % tw.get_keys()[0] 
+    print >> out, "(has-keys blue n%d)" % tw.get_keys()[1]
+    print >> out, "(has-keys yellow n%d)" % tw.get_keys()[2]
+    print >> out, "(has-keys green n%d)" % tw.get_keys()[3]
     produce_succesors(out, max_num) 
     produce_predicates(out, 32, 32)
     print >> out, ")"
