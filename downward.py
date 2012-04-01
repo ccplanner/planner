@@ -3,6 +3,11 @@
 import os
 from time import time
 
+var = "FAST_DOWNWARD_LOG"
+fd_log = ""
+if var in os.environ:
+    fd_log = os.environ[var]
+
 var = "FAST_DOWNWARD_HOME"
 if var not in os.environ:
     raise Exception("Please set the environment variable %s as the path to the directory containing Fast Downward." % var)
@@ -28,15 +33,18 @@ def translate( pddl, domain = 'pddl/domain.pddl', down_home=FAST_DOWNWARD_HOME):
 #    os.remove('output')
 #    os.remove('output.sas')
 #    os.remove('sas_plan')
-    os.system("%s/src/translate/translate.py %s %s" % (down_home, domain, pddl) )
+    os.system("%s/src/translate/translate.py %s %s" % (down_home, domain, pddl) 
+            + (""">> %s""" % fd_log if fd_log != "" else ""))
 
 def preprocess(sas='output.sas', down_home=FAST_DOWNWARD_HOME):
     ''' do the preporcess stuff'''
-    os.system("%s/src/preprocess/preprocess < %s" % (down_home, sas) )
+    os.system("%s/src/preprocess/preprocess < %s" % (down_home, sas) 
+            + (""">> %s""" % fd_log if fd_log != "" else ""))
 
 def search(heurestic = "astar(blind())", problem='output', down_home=FAST_DOWNWARD_HOME):
     ''' do the search'''
-    os.system("""%s/src/search/downward --search "%s" < %s""" % (down_home, heurestic, problem) )
+    os.system("""%s/src/search/downward --search "%s" < %s""" % (down_home, heurestic, problem) 
+            + (""">> %s""" % fd_log if fd_log != "" else ""))
 
 def get_moves(plan='sas_plan'):
     f = open(plan, 'r')
