@@ -3,6 +3,7 @@
 
 import pddlagent as pa
 import tworld
+import sys
 
 agent = pa.cacheing_pddl_agent()
 
@@ -29,6 +30,17 @@ class wrapper_agent:
 #wagent = wrapper_agent( pa.pddlagent )
 wagent = wrapper_agent( agent.get_move )
 tworld.set_agent( wagent.get_move )
-tworld.load_level('classical.dac',1)
+
+if len(sys.argv) > 1:
+    level_set = sys.argv[1]
+else:
+    level_set = 'classical.dac'
+
+if len(sys.argv) > 2:
+    level_num = int(sys.argv[2])
+else:
+    level_num = 1
+    
+tworld.load_level(level_set, level_num)
 #tworld.load_level('CCLP3.dac',5)
 #tworld.load_level('keys.dac',1)
