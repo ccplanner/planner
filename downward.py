@@ -18,7 +18,7 @@ def run( pddl):
     print "preprocess took: %f sec" % ( t2 - t1)
     search()
     t3 = time()
-    print "translate took: %f sec" % ( t3 - t2)
+    print "search took: %f sec" % ( t3 - t2)
     print "total took: %f sec" % ( t3 - t0)
     return get_moves()
 
