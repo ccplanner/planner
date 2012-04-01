@@ -19,6 +19,9 @@ class cacheing_pddl_agent:
 
     def get_move(self):
         """return a move"""
+        if verbose: print "agent (move requested)"
+        if verbose: print "agent (printing game status prior to move)"
+        if verbose: print_game_status()
         self.tick += 1
         if len( self.moves ) > 0:
             move = self.moves.pop()
@@ -36,6 +39,27 @@ class cacheing_pddl_agent:
         move = self.moves.pop()
         if verbose: print "agent (move: %s)" % translate_tw_move(move)
         return move
+
+def print_game_status():
+    print "game (printing board)"
+    print_board(9,9)
+    x,y = tw.chips_pos()
+    print "game (Keys R:%d B:%d Y:%d G:%d)" % tw.get_keys()
+    print "game (Boots Ice:%d Suction:%d Fire:%d Water:%d)" % tw.get_boots()
+    print "game (Player: %d,%d)" % (x, y)
+    print "game (Chips left: %d)" % tw.chips_needed()
+
+def print_board(x_max=32,y_max=32):
+    """note x_max and y_max are then number of tiles printed in that 
+        direction"""
+    for y in range(y_max):
+        for x in range(x_max):
+            print "%2x|" % tw.get_tile(x,y)[0],
+        print "\n",
+        for x in range(x_max):
+            print "%2x|" % tw.get_tile(x,y)[1],
+        print "\n",
+    #print "\n"
 
 def translate_move( move):
     '''translate a move for fast downward to tile world'''
