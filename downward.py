@@ -17,14 +17,14 @@ def run( pddl):
     t0 = time()
     translate( pddl )
     t1 = time()
-    print "translate took: %f sec" % ( t1 - t0)
+    print "FD translate took: %f sec" % ( t1 - t0)
     preprocess()
     t2 = time()
-    print "preprocess took: %f sec" % ( t2 - t1)
+    print "FD preprocess took: %f sec" % ( t2 - t1)
     search()
     t3 = time()
-    print "search took: %f sec" % ( t3 - t2)
-    print "total took: %f sec" % ( t3 - t0)
+    print "FD search took: %f sec" % ( t3 - t2)
+    print "FD total took: %f sec" % ( t3 - t0)
     return get_moves()
 
 
