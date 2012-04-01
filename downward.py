@@ -33,18 +33,24 @@ def run( pddl):
 
 def translate( pddl, domain = 'pddl/domain.pddl', down_home=FAST_DOWNWARD_HOME):
     ''' run fast downward translate, produces output'''
-    os.system("%s/src/translate/translate.py %s %s" % (down_home, domain, pddl) 
+    code = os.system("%s/src/translate/translate.py %s %s" % (down_home, domain, pddl) 
             + (""">> %s""" % fd_log if fd_log != "" else ""))
+    if code != 0:
+        raise Exception("FD translate did not terminate normally")
 
 def preprocess(sas='output.sas', down_home=FAST_DOWNWARD_HOME):
     ''' do the preporcess stuff'''
-    os.system("%s/src/preprocess/preprocess < %s" % (down_home, sas) 
+    code = os.system("%s/src/preprocess/preprocess < %s" % (down_home, sas) 
             + (""">> %s""" % fd_log if fd_log != "" else ""))
+    if code != 0:
+        raise Exception("FD preprocess did not terminate normally")
 
 def search(heurestic = "astar(blind())", problem='output', down_home=FAST_DOWNWARD_HOME):
     ''' do the search'''
-    os.system("""%s/src/search/downward --search "%s" < %s""" % (down_home, heurestic, problem) 
+    code = os.system("""%s/src/search/downward --search "%s" < %s""" % (down_home, heurestic, problem) 
             + (""">> %s""" % fd_log if fd_log != "" else ""))
+    if code != 0:
+        raise Exception("FD search did not terminate normally")
 
 def get_moves(plan='sas_plan'):
     try:
