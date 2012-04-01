@@ -3,6 +3,13 @@
 import tworld as tw
 import random
 import downward
+import ast
+import os
+
+var = "PDDL_AGENT_VERBOSE"
+verbose = False
+if var in os.environ:
+    verbose = ast.literal_eval(os.environ[var])
 
 class cacheing_pddl_agent:
 
@@ -14,15 +21,21 @@ class cacheing_pddl_agent:
         """return a move"""
         self.tick += 1
         if len( self.moves ) > 0:
-            return self.moves.pop()
+            move = self.moves.pop()
+            if verbose: print "agent (cached move: %s)" % translate_tw_move(move)
+            return move
         pddl_file_name = 'pddl/cc-agent%d.pddl' % self.tick
         pddl_file = open( pddl_file_name, 'w')
         produce_problem(pddl_file)
         pddl_file.close()
         # get moves and translate them
+        if verbose: print "agent (running planner)" 
         self.moves= map( translate_move, downward.run( pddl_file_name ))
+        if verbose: print "agent (moves from planner: %s)" % map( translate_tw_move, self.moves)
         self.moves.reverse() # reverse to that moves.pop() returns next move
-        return self.moves.pop()
+        move = self.moves.pop()
+        if verbose: print "agent (move: %s)" % translate_tw_move(move)
+        return move
 
 def translate_move( move):
     '''translate a move for fast downward to tile world'''
@@ -36,6 +49,20 @@ def translate_move( move):
        return tw.SOUTH
     if "north" in move:
        return tw.NORTH
+    assert "should never get here"
+
+def translate_tw_move( move):
+    '''translate a move for tile world to fast downward'''
+    if move == tw.WAIT:
+        return "wait (slip?)"
+    if move == tw.WEST:
+        return "west"
+    if move == tw.EAST:
+        return "east"
+    if move == tw.SOUTH:
+        return "south"
+    if move == tw.NORTH:
+        return "north"
     assert "should never get here"
 
 tick = 0;
