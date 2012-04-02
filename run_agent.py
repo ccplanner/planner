@@ -1,8 +1,10 @@
 #!/usr/bin/python2
 # For running planner
 
+from __future__ import division
 import pddlagent as pa
 import tworld
+import time
 import sys
 
 agent = pa.cacheing_pddl_agent()
@@ -16,13 +18,13 @@ class wrapper_agent:
 
     def get_move(self):
         '''A wrapper agent that has memory, to deal with fast ticks'''
+	time.sleep( 1 / 20) # each tick is 1/20th of second
         try:
             if self.skiped_moves >= 4 or tworld.chips_pos() != self.last_pos:
                 self.skiped_moves = 0
                 if tworld.get_tile( *tworld.chips_pos() )[1] == tworld.Ice:
                     return tworld.WAIT
                 self.last_pos= tworld.chips_pos()
-                #last_move=pa.pddl_agent()
                 self.last_move=agent.get_move()
             else:
                 self.skiped_moves += 1
