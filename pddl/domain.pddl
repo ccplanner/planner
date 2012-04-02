@@ -1,5 +1,4 @@
 ;; defineing chips challenge domain
-;; very simple
 
 (define (domain chips-challenge)
   (:requirements :equality :typing )
@@ -10,6 +9,8 @@
                (chip ?l - location)
                (socket ?l - location)
                (wall ?l - location)
+               (block ?l - location)
+               (dirt ?l - location)
                (has-keys ?c - color ?n - number)
                (key ?l - location ?c - color)
                (door ?l - location ?c - color)
@@ -32,6 +33,20 @@
                       )
    :effect       (and (not (at ?p ?from))
                       (at ?p ?to)
+                      )
+   )
+   
+  (:action move-dirt
+   :parameters (?p - player ?from ?to - location ?dir - direction)
+   :precondition (and (at ?p ?from)
+                      (dirt ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (not (chip-state slipping))
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      (not (dirt ?to))
+                      (floor ?to)
                       )
    )
   
