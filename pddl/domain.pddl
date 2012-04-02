@@ -49,6 +49,42 @@
                       (floor ?to)
                       )
    )
+   
+  (:action push-block
+   :parameters (?p - player ?from ?to - location ?dir - direction ?blockto - location)
+   :precondition (and (at ?p ?from)
+                      (block ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (MOVE-DIR ?to ?blockto ?dir)
+                      (not (chip-state slipping)) ;does this matter?
+                      (floor ?blockto)
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      (not (block ?to))
+                      (block ?blockto)
+                      (floor ?to)
+                      (not (floor ?blockto))
+                      )
+   )
+   
+  (:action push-block-into-water
+   :parameters (?p - player ?from ?to - location ?dir - direction ?blockto - location)
+   :precondition (and (at ?p ?from)
+                      (block ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (MOVE-DIR ?to ?blockto ?dir)
+                      (not (chip-state slipping)) ;does this matter?
+                      (water ?blockto)
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      (not (block ?to))
+                      (dirt ?blockto)
+                      (floor ?to)
+                      (not (water ?blockto))
+                      )
+   )
   
   (:action move-socket
    :parameters (?p - player ?from ?to - location ?dir - direction)
