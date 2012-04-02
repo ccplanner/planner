@@ -2,6 +2,8 @@
 
 (define (domain chips-challenge)
   (:requirements :equality :typing )
+  ;; These additional requirements may be necessary
+  ;;(:requirements :equality :typing :adl :derived-predicates)
   (:types thing location direction number color - object
           player - thing)
   (:predicates (floor ?l - location)
@@ -303,7 +305,6 @@
 ;; Keys
 
 ;; Move to a tile containing a ?color key, having had ?okeys ?color keys already.
-;; TODO NOT TESTED
 ;; TODO Need to increase 'successor' numbers to accomodate large numbers of keys?
   (:action move-key
    :parameters (?p - player ?from ?to - location ?dir - direction ?color - color ?okeys ?nkeys - number)
@@ -323,10 +324,10 @@
    )
 
 ;; Move to a tile containing a ?color door, having ?okeys ?color keys already.
-;; TODO NOT TESTED
-;; TODO Need to indicate to the planner special :requirement to handle 
-;; the '=' or 'when' such as 'adl?  See 'benchmarks/psr-large/domain.pddl'
-;; TODO Should colors be 'constants' instead of 'objects'?
+;; Need to indicate to the planner special :requirement to handle 
+;; the '=' or 'when' such as 'adl?  See 'benchmarks/psr-large/domain.pddl'?
+;; It seems not.
+;; Should colors be 'constants' instead of 'objects'?  Seems to work the way it is.
   (:action move-door
    :parameters (?p - player ?from ?to - location ?dir - direction ?color - color ?okeys ?nkeys - number)
    :precondition (and (at ?p ?from)
@@ -340,14 +341,11 @@
                       (at ?p ?to)
                       (not (door ?to ?color))
                       (floor ?to)
-                      ;; This is needed to handle the special case of 
-                      ;; green keys and doors, but it seems to cause an 
-                      ;; assertion error in FD
-                      ;;(when (not (= ?color green))
-                        ;;(not (has-keys ?color ?okeys))
-                        ;;(has-keys ?color ?nkeys))
-                      (not (has-keys ?color ?okeys))
-                      (has-keys ?color ?nkeys)
+                      (when (not (= ?color green))
+                        (and 
+                          (not (has-keys ?color ?okeys))
+                          (has-keys ?color ?nkeys))
+                        )
                       )
    )
 )
