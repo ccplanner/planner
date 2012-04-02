@@ -2,7 +2,7 @@
 ;; very simple
 
 (define (domain chips-challenge)
-  (:requirements :typing )
+  (:requirements :equality :typing )
   (:types thing location direction number color - object
           player - thing)
   (:predicates (floor ?l - location)
@@ -127,13 +127,16 @@
                       )
    )
 
-  (:action slip-ice-wall-floor
+  (:action slip-ice-wall-chip
    :parameters (?p - player ?from ?to - location ?odir - direction ?ndir - direction ?ochips ?nchips - number)
    :precondition (and (at ?p ?from)
                       (ice-wall ?from)
                       (chip ?to)
                       (chips-left ?ochips)
-                      (successor ?nchips ?ochips)
+                      (or (successor ?nchips ?ochips)
+                          ;; handle having n0 chips
+                          (and (= ?ochips ?nchips) (= ?ochips n0))
+                          )
                       (chip-state slipping)
                       (MOVE-DIR ?from ?to ?ndir)
                       (slipping-dir ?odir)
@@ -156,7 +159,10 @@
                       (chip ?to)
                       (MOVE-DIR ?from ?to ?dir)
                       (chips-left ?ochips)
-                      (successor ?nchips ?ochips)
+                      (or (successor ?nchips ?ochips)
+                          ;; handle having n0 chips
+                          (and (= ?ochips ?nchips) (= ?ochips n0))
+                          )
                       (chip-state slipping)
                       (slipping-dir ?dir)
                       )
@@ -222,7 +228,6 @@
                       )
   )
    
-;; handle having n0 chips
 ;; maybe make zero a succesor to itself
   (:action move-chip
    :parameters (?p - player ?from ?to - location ?dir - direction ?ochips ?nchips - number)
@@ -230,7 +235,10 @@
                       (chip ?to)
                       (MOVE-DIR ?from ?to ?dir)
                       (chips-left ?ochips)
-                      (successor ?nchips ?ochips)
+                      (or (successor ?nchips ?ochips)
+                          ;; handle having n0 chips
+                          (and (= ?ochips ?nchips) (= ?ochips n0))
+                          )
                       )
    :effect       (and (not (at ?p ?from))
                       (at ?p ?to)
