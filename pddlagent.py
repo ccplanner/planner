@@ -272,13 +272,17 @@ def produce_predicates( out, x_max, y_max ):
                 print >> out, "(water pos-%d-%d)" % (i,j)
             elif top == tw.Fire:
                 print >> out, "(fire pos-%d-%d)" % (i,j)
+            elif top == tw.PopupWall:
+                print >> out, "(popup-wall pos-%d-%d)" % (i,j)                
             elif top == tw.Dirt:
-                print >> out, "(dirt pos-%d-%d)" % (i, j)
+                print >> out, "(dirt pos-%d-%d)" % (i, j)                
+            elif top == tw.Burglar:
+                print >> out, "(thief pos-%d-%d)" % (i, j)
             elif top == tw.Block_Static: #todo block north/etc
                 print >> out, "(block pos-%d-%d)" % (i, j)
             elif top == tw.Bomb:
                 print >> out, "(bomb pos-%d-%d)" % (i, j)
-            elif top == tw.Bomb:
+            elif top == tw.Gravel:
                 print >> out, "(floor pos-%d-%d)" % (i, j)
                 print >> out, "(gravel pos-%d-%d)" % (i, j)
             elif top == tw.Ice:
