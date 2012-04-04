@@ -46,8 +46,6 @@ class wrapper_agent:
         try:
             if self.skiped_moves >= 4 or tworld.chips_pos() != self.last_pos:
                 self.skiped_moves = 0
-                if tworld.get_tile( *tworld.chips_pos() )[1] == tworld.Ice:
-                    return tworld.WAIT
                 self.last_pos= tworld.chips_pos()
                 self.last_move=agent.get_move()
             else:
