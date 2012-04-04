@@ -12,6 +12,7 @@
                (wall ?l - location)
                (block ?l - location)
                (bomb ?l - location)
+               (popup-wall ?l - location)
                (dirt ?l - location)
                (gravel ?l - location)
                (has-keys ?c - color ?n - number)
@@ -53,6 +54,20 @@
                       (at ?to)
                       (not (dirt ?to))
                       (floor ?to)
+                      )
+   )
+
+  (:action move-popup-wall
+   :parameters (?from ?to - location ?dir - direction)
+   :precondition (and (at ?from)
+                      (popup-wall ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (not (chip-state slipping))
+                      )
+   :effect       (and (not (at ?from))
+                      (at ?to)
+                      (not (popup-wall ?to))
+                      (wall ?to)
                       )
    )
    
