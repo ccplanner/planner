@@ -85,6 +85,25 @@
                       (not (water ?blockto))
                       )
    )
+   
+   ;;these may be uinified into a single action?
+  (:action push-block-into-bomb
+   :parameters (?p - player ?from ?to - location ?dir - direction ?blockto - location)
+   :precondition (and (at ?p ?from)
+                      (block ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (MOVE-DIR ?to ?blockto ?dir)
+                      (not (chip-state slipping)) ;does this matter?
+                      (water ?blockto)
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      (not (block ?to))
+                      (floor ?blockto)
+                      (floor ?to)
+                      (not (bomb ?blockto))
+                      )
+   )
   
   (:action move-socket
    :parameters (?p - player ?from ?to - location ?dir - direction)
