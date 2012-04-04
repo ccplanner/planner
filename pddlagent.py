@@ -275,7 +275,9 @@ def produce_predicates( out, x_max, y_max ):
             elif top == tw.PopupWall:
                 print >> out, "(popup-wall pos-%d-%d)" % (i,j)                
             elif top == tw.Dirt:
-                print >> out, "(dirt pos-%d-%d)" % (i, j)
+                print >> out, "(dirt pos-%d-%d)" % (i, j)                
+            elif top == tw.Thief:
+                print >> out, "(thief pos-%d-%d)" % (i, j)
             elif top == tw.Block_Static: #todo block north/etc
                 print >> out, "(block pos-%d-%d)" % (i, j)
             elif top == tw.Bomb:
