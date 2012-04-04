@@ -6,6 +6,30 @@ import pddlagent as pa
 import tworld
 import time
 import sys
+import config
+from optparse import OptionParser
+
+DEFAULT_LEVEL_SET="classical.dac"
+
+usage = "usage: python %s [options] file" % sys.argv[0]
+parser = OptionParser(usage=usage)
+parser.add_option("-l", "--level", dest="level_num", type="int",
+        help="specify the level number to play [1]", metavar="NUMBER", default=1)
+parser.add_option("","--pddl-agent-verbose", action="store_true", dest="pddl_agent_verbose", 
+        default=False, help="print extra log messages from the PDDL agent [false]")
+parser.add_option("","--fast-downward-quiet", action="store_true",dest="fast_downward_quiet", 
+        default=False, help="print Fast Downward status messages to a log instead of stdout [false]")
+parser.add_option("","--fast-downward-log", dest="fast_downward_log", default="fd.log", metavar="FILE",
+        help="specify log file where Fast Downward status messages should go instead of stdout [fd.log]")
+(options, args) = parser.parse_args()
+config.opts = options # Save to use in other modules
+    
+if len(args) > 0:
+    level_set = args[0] 
+else:
+    print usage
+    print "playing %s, the default level set, since no level set was specified" % DEFAULT_LEVEL_SET
+    level_set = DEFAULT_LEVEL_SET
 
 agent = pa.cacheing_pddl_agent()
 
@@ -39,16 +63,4 @@ class wrapper_agent:
 wagent = wrapper_agent( agent.get_move )
 tworld.set_agent( wagent.get_move )
 
-if len(sys.argv) > 1:
-    level_set = sys.argv[1]
-else:
-    level_set = 'classical.dac'
-
-if len(sys.argv) > 2:
-    level_num = int(sys.argv[2])
-else:
-    level_num = 1
-    
-tworld.load_level(level_set, level_num)
-#tworld.load_level('CCLP3.dac',5)
-#tworld.load_level('keys.dac',1)
+tworld.load_level(level_set, options.level_num)

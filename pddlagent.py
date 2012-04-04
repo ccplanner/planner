@@ -6,17 +6,17 @@ import downward
 import ast
 import os
 import re
+import config as cfg
 
-var = "PDDL_AGENT_VERBOSE"
 verbose = False
-if var in os.environ:
-    verbose = ast.literal_eval(os.environ[var])
 
 class cacheing_pddl_agent:
 
     def __init__(self):
         self.moves=[] # list of moves to carry out moves.pop() is next move
         self.tick = 0
+        global verbose
+        verbose = cfg.opts.pddl_agent_verbose
 
     def get_move(self):
         """return a move"""
