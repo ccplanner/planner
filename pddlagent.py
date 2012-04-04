@@ -139,6 +139,10 @@ def produce_objects( out, max_num ):
     blue - color
     yellow - color
     green - color
+    water - type
+    fire - type
+    ice - type
+    slide - type
     """
     produce_numbers( out, max_num )
     produce_locations( out, 32, 32 )
@@ -254,6 +258,14 @@ def produce_predicates( out, x_max, y_max ):
                 print >> out, "(door pos-%d-%d yellow)" % (i,j)
             elif top == tw.Door_Green:
                 print >> out, "(door pos-%d-%d green)" % (i,j)
+            elif top == tw.Boots_Water:
+                print >> out, "(boots pos-%d-%d water)" % (i,j)
+            elif top == tw.Boots_Fire:
+                print >> out, "(boots pos-%d-%d fire)" % (i,j)
+            elif top == tw.Boots_Ice:
+                print >> out, "(boots pos-%d-%d ice)" % (i,j)
+            elif top == tw.Boots_Slide:
+                print >> out, "(boots pos-%d-%d slide)" % (i,j)
             elif top == tw.Wall:
                 print >> out, "(wall pos-%d-%d)" % (i,j)
             elif top == tw.Water:
