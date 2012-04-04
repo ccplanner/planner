@@ -280,7 +280,7 @@ def produce_predicates( out, x_max, y_max ):
                 print >> out, "(block pos-%d-%d)" % (i, j)
             elif top == tw.Bomb:
                 print >> out, "(bomb pos-%d-%d)" % (i, j)
-            elif top == tw.Bomb:
+            elif top == tw.Gravel:
                 print >> out, "(floor pos-%d-%d)" % (i, j)
                 print >> out, "(gravel pos-%d-%d)" % (i, j)
             elif top == tw.Ice:
