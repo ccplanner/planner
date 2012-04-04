@@ -241,6 +241,8 @@ def produce_predicates( out, x_max, y_max ):
                 print >> out, "(dirt pos-%d-%d)" % (i, j)
             elif top == tw.Block_Static: #todo block north/etc
                 print >> out, "(block pos-%d-%d)" % (i, j)
+            elif top == tw.Bomb:
+                print >> out, "(bomb pos-%d-%d)" % (i, j)
             elif top == tw.Ice:
                 print >> out, "(ice pos-%d-%d)" % (i,j)
             elif top in (tw.IceWall_Northeast, tw.IceWall_Northwest, tw.IceWall_Southeast, tw.IceWall_Southwest):
