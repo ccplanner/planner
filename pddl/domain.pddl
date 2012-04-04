@@ -16,6 +16,8 @@
                (has-keys ?c - color ?n - number)
                (key ?l - location ?c - color)
                (door ?l - location ?c - color)
+               (force-floor ?l - location)
+               (slide-dir ?l - location ?d - direction)
                (ice ?l - location)
                (ice-wall ?l - location)
                (ice-wall-dir ?l - location ?in - direction ?out - direction)
@@ -32,6 +34,7 @@
                       (floor ?to)
                       (MOVE-DIR ?from ?to ?dir)
                       (not (chip-state slipping))
+                      (not (chip-state sliding))
                       )
    :effect       (and (not (at ?p ?from))
                       (at ?p ?to)
@@ -101,6 +104,72 @@
                       (floor ?to)
                       )
    )
+
+;; Slide/Force Floors
+  (:action move-force
+   :parameters (?p - player ?from ?to - location ?dir - direction)
+   :precondition (and (at ?p ?from)
+                      (force-floor ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (not (chip-state sliding))
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      (chip-state sliding)
+                      )
+   )
+
+  (:action slide-force
+   :parameters (?p - player ?from ?to - location ?dir - direction)
+   :precondition (and (at ?p ?from)
+                      (force-floor ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (slide-dir ?from ?dir)
+                      (chip-state sliding) ;; maybe redundent
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      )
+   )
+
+  (:action slide-floor
+   :parameters (?p - player ?from ?to - location ?dir - direction)
+   :precondition (and (at ?p ?from)
+                      (floor ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (slide-dir ?from ?dir)
+                      (chip-state sliding) ;; maybe redundent
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      (not (chip-state sliding))
+                      )
+   )
+
+  (:action slide-force-chip
+   :parameters (?p - player ?from ?to - location ?dir - direction ?ochips ?nchips - number)
+   :precondition (and (at ?p ?from)
+                      (force-floor ?from)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (slide-dir ?from ?dir)
+                      (chip-state sliding) ;; maybe redundent
+                      (chip ?to) ;;chips stuff
+                      (chips-left ?ochips)
+                      (or (successor ?nchips ?ochips)
+                          ;; handle having n0 chips
+                          (and (= ?ochips ?nchips) (= ?ochips n0))
+                          )
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      (not (chip ?to))
+                      (floor ?to)
+                      (not (chips-left ?ochips))
+                      (chips-left ?nchips)
+                      (not (chip-state sliding))
+                      )
+   )
+
 
 ;; Ice
   (:action move-ice
@@ -286,6 +355,8 @@
    :parameters (?p - player ?from ?to - location ?dir - direction ?ochips ?nchips - number)
    :precondition (and (at ?p ?from)
                       (chip ?to)
+                      (not (chip-state sliding))
+                      (not (chip-state slipping))
                       (MOVE-DIR ?from ?to ?dir)
                       (chips-left ?ochips)
                       (or (successor ?nchips ?ochips)

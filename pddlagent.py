@@ -213,8 +213,29 @@ def produce_predicates( out, x_max, y_max ):
                     print >> out, "(switch-wall-closed pos-%d-%d)" % (i,j)
                 elif bot == tw.Button_Green:
                     print >> out, "(green-button pos-%d-%d)" % (i,j)
+                elif bot in (tw.Slide_North, tw.Slide_South, tw.Slide_East, tw.Slide_West):
+                    print >> out, "(force-floor pos-%d-%d)" % (i,j)
+                    print >> out, "(chip-state sliding)" #note not slipping
+                    if bot == tw.Slide_North:
+                        print >> out, "(slide-dir pos-%d-%d dir-north)" % (i,j)
+                    elif bot == tw.Slide_South:
+                        print >> out, "(slide-dir pos-%d-%d dir-south)" % (i,j)
+                    elif bot == tw.Slide_East:
+                        print >> out, "(slide-dir pos-%d-%d dir-east)" % (i,j)
+                    elif bot == tw.Slide_West:
+                        print >> out, "(slide-dir pos-%d-%d dir-west)" % (i,j)
             elif top == tw.ICChip:
                 print >> out, "(chip pos-%d-%d)" % (i,j)
+            elif top in (tw.Slide_North, tw.Slide_South, tw.Slide_East, tw.Slide_West):
+                print >> out, "(force-floor pos-%d-%d)" % (i,j)
+                if top == tw.Slide_North:
+                    print >> out, "(slide-dir pos-%d-%d dir-north)" % (i,j)
+                elif top == tw.Slide_South:
+                    print >> out, "(slide-dir pos-%d-%d dir-south)" % (i,j)
+                elif top == tw.Slide_East:
+                    print >> out, "(slide-dir pos-%d-%d dir-east)" % (i,j)
+                elif top == tw.Slide_West:
+                    print >> out, "(slide-dir pos-%d-%d dir-west)" % (i,j)
             elif top == tw.Key_Red:
                 print >> out, "(key pos-%d-%d red)" % (i,j)
             elif top == tw.Key_Blue:
