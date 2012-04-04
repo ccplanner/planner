@@ -80,6 +80,8 @@ def translate_move( move):
     '''translate a move for fast downward to tile world'''
     if "slip" in move:
        return tw.WAIT
+    if "slide-force-force" in move: # don't move when slide to preserve free move
+       return tw.WAIT
     if "west" in move:
        return tw.WEST
     if "east" in move:

@@ -119,7 +119,7 @@
                       )
    )
 
-  (:action slide-force
+  (:action slide-force-force
    :parameters (?p - player ?from ?to - location ?dir - direction)
    :precondition (and (at ?p ?from)
                       (force-floor ?to)
@@ -129,6 +129,22 @@
                       )
    :effect       (and (not (at ?p ?from))
                       (at ?p ?to)
+                      (have-free-move)
+                      )
+   )
+
+  (:action slide-force-free
+   :parameters (?p - player ?from ?to - location ?dir - direction)
+   :precondition (and (at ?p ?from)
+                      (force-floor ?to)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (have-free-move)
+                      (not (slide-dir ?from ?dir)) ;; if free move then don't go this way
+                      (chip-state sliding) ;; maybe redundent
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      (not (have-free-move))
                       )
    )
 
@@ -137,12 +153,15 @@
    :precondition (and (at ?p ?from)
                       (floor ?to)
                       (MOVE-DIR ?from ?to ?dir)
-                      (slide-dir ?from ?dir)
+                      (or (slide-dir ?from ?dir) ;; sliding in this dir or use 
+                       ;; have-free move
+                       (have-free-move))
                       (chip-state sliding) ;; maybe redundent
                       )
    :effect       (and (not (at ?p ?from))
                       (at ?p ?to)
                       (not (chip-state sliding))
+                      (not (have-free-move))
                       )
    )
 
@@ -151,7 +170,9 @@
    :precondition (and (at ?p ?from)
                       (force-floor ?from)
                       (MOVE-DIR ?from ?to ?dir)
-                      (slide-dir ?from ?dir)
+                      (or (slide-dir ?from ?dir) ;; sliding in this dir or use 
+                       ;; have-free move
+                       (have-free-move))
                       (chip-state sliding) ;; maybe redundent
                       (chip ?to) ;;chips stuff
                       (chips-left ?ochips)
@@ -162,6 +183,7 @@
                       )
    :effect       (and (not (at ?p ?from))
                       (at ?p ?to)
+                      (not (have-free-move))
                       (not (chip ?to))
                       (floor ?to)
                       (not (chips-left ?ochips))
