@@ -13,6 +13,7 @@
                (block ?l - location)
                (bomb ?l - location)
                (dirt ?l - location)
+               (gravel ?l - location)
                (has-keys ?c - color ?n - number)
                (key ?l - location ?c - color)
                (door ?l - location ?c - color)

@@ -181,7 +181,7 @@ def produce_predicates( out, x_max, y_max ):
             # and maintinable
             #################
             treat_as_floor = (tw.Empty, tw.Exit, tw.HintButton, tw.Wall_North, tw.Wall_South, 
-                            tw.Wall_East, tw.Wall_West, tw.Wall_Southeast, tw.Gravel)
+                            tw.Wall_East, tw.Wall_West, tw.Wall_Southeast)
             top, bot = tw.get_tile(i,j)
             if top in treat_as_floor:
                 print >> out, "(floor pos-%d-%d)" % (i,j)
@@ -266,6 +266,9 @@ def produce_predicates( out, x_max, y_max ):
                 print >> out, "(block pos-%d-%d)" % (i, j)
             elif top == tw.Bomb:
                 print >> out, "(bomb pos-%d-%d)" % (i, j)
+            elif top == tw.Bomb:
+                print >> out, "(floor pos-%d-%d)" % (i, j)
+                print >> out, "(gravel pos-%d-%d)" % (i, j)
             elif top == tw.Ice:
                 print >> out, "(ice pos-%d-%d)" % (i,j)
             elif top in (tw.IceWall_Northeast, tw.IceWall_Northwest, tw.IceWall_Southeast, tw.IceWall_Southwest):
