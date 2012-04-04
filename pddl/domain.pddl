@@ -222,6 +222,23 @@
                       )
    )
 
+  (:action slip-ice-socket
+   :parameters (?p - player ?from ?to - location ?dir - direction)
+   :precondition (and (at ?p ?from)
+                      (ice ?from)
+                      (or (ice ?to) (ice-wall ?to))
+                      (chip-state slipping)
+                      (MOVE-DIR ?from ?to ?dir)
+                      (slipping-dir ?dir)
+                      (chips-left n0)
+                      )
+   :effect       (and (not (at ?p ?from))
+                      (at ?p ?to)
+                      (not (socket ?to))
+                      (floor ?to)
+                      )
+   )
+
   (:action slip-ice-wall-ice
    :parameters (?p - player ?from ?to - location ?odir - direction ?ndir - direction)
    :precondition (and (at ?p ?from)
