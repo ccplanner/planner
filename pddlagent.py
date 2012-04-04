@@ -5,17 +5,18 @@ import random
 import downward
 import ast
 import os
+import re
+import config as cfg
 
-var = "PDDL_AGENT_VERBOSE"
 verbose = False
-if var in os.environ:
-    verbose = ast.literal_eval(os.environ[var])
 
 class cacheing_pddl_agent:
 
     def __init__(self):
         self.moves=[] # list of moves to carry out moves.pop() is next move
         self.tick = 0
+        global verbose
+        verbose = cfg.opts.pddl_agent_verbose
 
     def get_move(self):
         """return a move"""
@@ -27,10 +28,22 @@ class cacheing_pddl_agent:
             move = self.moves.pop()
             if verbose: print "agent (cached move: %s)" % translate_tw_move(move)
             return move
+        if verbose: print "agent (no cached moves)" 
         pddl_file_name = 'pddl/cc-agent%d.pddl' % self.tick
         pddl_file = open( pddl_file_name, 'w')
         produce_problem(pddl_file)
         pddl_file.close()
+        if verbose:
+            pddl_file = open( pddl_file_name, 'r')
+            print "agent (printing problem PDDL, but skipping moves and walls and such)"
+            depth = 0
+            for line in pddl_file: 
+                if re.search(r"^\(MOVE-DIR|^\(floor pos-|^pos-.*location$|^\(wall pos.*\)$", line) is None: 
+                    opens = len(re.findall(r"\(",line))
+                    closes = len(re.findall(r"\)",line))
+                    if line.strip() != "": print "  " + ("  " * depth) + line.strip()
+                    depth += opens - closes
+            pddl_file.close()
         # get moves and translate them
         if verbose: print "agent (running planner)" 
         self.moves= map( translate_move, downward.run( pddl_file_name ))
@@ -41,29 +54,33 @@ class cacheing_pddl_agent:
         return move
 
 def print_game_status():
-    print "game (printing board)"
-    print_board(9,9)
+    print "game (printing board, top tiles only)"
+    print_board(9,9,False)
     x,y = tw.chips_pos()
     print "game (Keys R:%d B:%d Y:%d G:%d)" % tw.get_keys()
     print "game (Boots Ice:%d Suction:%d Fire:%d Water:%d)" % tw.get_boots()
     print "game (Player: %d,%d)" % (x, y)
     print "game (Chips left: %d)" % tw.chips_needed()
 
-def print_board(x_max=32,y_max=32):
+def print_board(x_max=32,y_max=32,print_bottom=True):
     """note x_max and y_max are then number of tiles printed in that 
         direction"""
     for y in range(y_max):
+        print "  ", 
         for x in range(x_max):
             print "%2x|" % tw.get_tile(x,y)[0],
         print "\n",
-        for x in range(x_max):
-            print "%2x|" % tw.get_tile(x,y)[1],
-        print "\n",
-    #print "\n"
+        if print_bottom:
+            print "  ",
+            for x in range(x_max):
+                print "%2x|" % tw.get_tile(x,y)[1],
+            print "\n",
 
 def translate_move( move):
     '''translate a move for fast downward to tile world'''
     if "slip" in move:
+       return tw.WAIT
+    if "slide-force-force" in move: # don't move when slide to preserve free move
        return tw.WAIT
     if "west" in move:
        return tw.WEST
@@ -126,7 +143,7 @@ def produce_objects( out, max_num ):
     fire - type
     ice - type
     slide - type
-    player-01 - player"""
+    """
     produce_numbers( out, max_num )
     produce_locations( out, 32, 32 )
     print >> out, ")"
@@ -146,10 +163,10 @@ def produce_init( out, max_num ):
     print >> out, """(:init"""
     print >> out, "(chips-left n%d)" % tw.chips_needed()
     print >> out, "(switched-walls-open n0)" 
-    print >> out, "(has-keys red n0)" 
-    print >> out, "(has-keys blue n0)" 
-    print >> out, "(has-keys yellow n0)" 
-    print >> out, "(has-keys green n0)" 
+    print >> out, "(has-keys red n%d)" % tw.get_keys()[0] 
+    print >> out, "(has-keys blue n%d)" % tw.get_keys()[1]
+    print >> out, "(has-keys yellow n%d)" % tw.get_keys()[2]
+    print >> out, "(has-keys green n%d)" % tw.get_keys()[3]
     produce_succesors(out, max_num) 
     produce_predicates(out, 32, 32)
     print >> out, ")"
@@ -168,7 +185,7 @@ def produce_predicates( out, x_max, y_max ):
             # and maintinable
             #################
             treat_as_floor = (tw.Empty, tw.Exit, tw.HintButton, tw.Wall_North, tw.Wall_South, 
-                            tw.Wall_East, tw.Wall_West, tw.Wall_Southeast, tw.Dirt, tw.Gravel)
+                            tw.Wall_East, tw.Wall_West, tw.Wall_Southeast, tw.Gravel)
             top, bot = tw.get_tile(i,j)
             if top in treat_as_floor:
                 print >> out, "(floor pos-%d-%d)" % (i,j)
@@ -178,7 +195,7 @@ def produce_predicates( out, x_max, y_max ):
             elif top == tw.Socket:
                 print >> out, "(socket pos-%d-%d)" % (i,j)
             elif top in (tw.Chip_North, tw.Chip_West, tw.Chip_South, tw.Chip_East):
-                print >> out, "(at player-01 pos-%d-%d)" % (i,j)
+                print >> out, "(at pos-%d-%d)" % (i,j)
                 if top == tw.Chip_East:
                     chip_dir = "dir-east"
                 elif top == tw.Chip_West:
@@ -196,14 +213,35 @@ def produce_predicates( out, x_max, y_max ):
                     print >> out, "(ice pos-%d-%d)" % (i,j)
                     print >> out, "(chip-state slipping)"
                     print >> out, "(slipping-dir %s)" % chip_dir
-                elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
+                elif bot == tw.SwitchWall_Open:
                     print >> out, "(switch-wall-open pos-%d-%d)" % (i,j)
-                elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
+                elif bot == tw.SwitchWall_Closed:
                     print >> out, "(switch-wall-closed pos-%d-%d)" % (i,j)
-                elif top == tw.Button_Green or bot == tw.Button_Green:
+                elif bot == tw.Button_Green:
                     print >> out, "(green-button pos-%d-%d)" % (i,j)
+                elif bot in (tw.Slide_North, tw.Slide_South, tw.Slide_East, tw.Slide_West):
+                    print >> out, "(force-floor pos-%d-%d)" % (i,j)
+                    print >> out, "(chip-state sliding)" #note not slipping
+                    if bot == tw.Slide_North:
+                        print >> out, "(slide-dir pos-%d-%d dir-north)" % (i,j)
+                    elif bot == tw.Slide_South:
+                        print >> out, "(slide-dir pos-%d-%d dir-south)" % (i,j)
+                    elif bot == tw.Slide_East:
+                        print >> out, "(slide-dir pos-%d-%d dir-east)" % (i,j)
+                    elif bot == tw.Slide_West:
+                        print >> out, "(slide-dir pos-%d-%d dir-west)" % (i,j)
             elif top == tw.ICChip:
                 print >> out, "(chip pos-%d-%d)" % (i,j)
+            elif top in (tw.Slide_North, tw.Slide_South, tw.Slide_East, tw.Slide_West):
+                print >> out, "(force-floor pos-%d-%d)" % (i,j)
+                if top == tw.Slide_North:
+                    print >> out, "(slide-dir pos-%d-%d dir-north)" % (i,j)
+                elif top == tw.Slide_South:
+                    print >> out, "(slide-dir pos-%d-%d dir-south)" % (i,j)
+                elif top == tw.Slide_East:
+                    print >> out, "(slide-dir pos-%d-%d dir-east)" % (i,j)
+                elif top == tw.Slide_West:
+                    print >> out, "(slide-dir pos-%d-%d dir-west)" % (i,j)
             elif top == tw.Key_Red:
                 print >> out, "(key pos-%d-%d red)" % (i,j)
             elif top == tw.Key_Blue:
@@ -234,8 +272,29 @@ def produce_predicates( out, x_max, y_max ):
                 print >> out, "(water pos-%d-%d)" % (i,j)
             elif top == tw.Fire:
                 print >> out, "(fire pos-%d-%d)" % (i,j)
+            elif top == tw.Dirt:
+                print >> out, "(dirt pos-%d-%d)" % (i, j)
+            elif top == tw.Block_Static: #todo block north/etc
+                print >> out, "(block pos-%d-%d)" % (i, j)
+            elif top == tw.Bomb:
+                print >> out, "(bomb pos-%d-%d)" % (i, j)
             elif top == tw.Ice:
                 print >> out, "(ice pos-%d-%d)" % (i,j)
+            elif top in (tw.IceWall_Northeast, tw.IceWall_Northwest, tw.IceWall_Southeast, tw.IceWall_Southwest):
+                print >> out, "(ice-wall pos-%d-%d)" % (i,j)
+                if top == tw.IceWall_Northeast: # Open North and East
+                    # slip in going south slip out going east
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-south dir-east)" % (i,j)
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-west dir-north)" % (i,j)
+                elif top == tw.IceWall_Northwest: # Open North and West
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-south dir-west)" % (i,j)
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-east dir-north)" % (i,j)
+                elif top == tw.IceWall_Southeast: # Open South and East
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-north dir-east)" % (i,j)
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-west dir-south)" % (i,j)
+                elif top == tw.IceWall_Southwest: # Open South and West
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-north dir-west)" % (i,j)
+                    print >> out, "(ice-wall-dir pos-%d-%d dir-east dir-south)" % (i,j)
             elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
                 print >> out, "(switch-wall-open pos-%d-%d)" % (i,j)
             elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
@@ -255,8 +314,9 @@ def can_move_east_west( (w_top, w_bot), (e_top, e_bot) ):
     if both_walls( (w_top, w_bot), (e_top, e_bot) ):
         return False
     # west does not have a blocking tile
-    if  set((w_top, w_bot)).isdisjoint( (tw.Wall_East, tw.IceWall_Southeast, tw.IceWall_Northeast, tw.Wall_Southeast) ) and \
-        set( (e_top, e_bot)).isdisjoint( (tw.Wall_West, tw.IceWall_Southwest, tw.IceWall_Northwest) ):
+    # IceWall_Southwest is open to the south and west
+    if  set((w_top, w_bot)).isdisjoint( (tw.Wall_East, tw.IceWall_Southwest, tw.IceWall_Northwest, tw.Wall_Southeast) ) and \
+        set( (e_top, e_bot)).isdisjoint( (tw.Wall_West, tw.IceWall_Southeast, tw.IceWall_Northeast) ):
         return True
     else:
         return False
@@ -265,8 +325,9 @@ def can_move_north_south( n_tile, s_tile ):
     """ if movement north to south is possible n_tile and s_tile are (top, bot) tuples"""
     if both_walls( n_tile, s_tile ):
         return False
-    if  set( n_tile).isdisjoint( (tw.Wall_South, tw.IceWall_Southeast, tw.IceWall_Southwest, tw.Wall_Southeast) ) and \
-        set( s_tile).isdisjoint( (tw.Wall_North, tw.IceWall_Northeast, tw.IceWall_Northwest) ):
+    # IceWall_Northeast is open to the north and east
+    if  set( n_tile).isdisjoint( (tw.Wall_South, tw.IceWall_Northeast, tw.IceWall_Northwest, tw.Wall_Southeast) ) and \
+        set( s_tile).isdisjoint( (tw.Wall_North, tw.IceWall_Southeast, tw.IceWall_Southwest) ):
         return True
     else:
         return False
@@ -283,5 +344,5 @@ def produce_goal( out ):
         for j in range( 32 ):
             top, bot = tw.get_tile(i,j)
             if top == tw.Exit :
-                print >> out, "(at player-01 pos-%d-%d)" % (i,j)
+                print >> out, "(at pos-%d-%d)" % (i,j)
     print >> out, ")"
