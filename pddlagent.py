@@ -207,11 +207,11 @@ def produce_predicates( out, x_max, y_max ):
                     print >> out, "(ice pos-%d-%d)" % (i,j)
                     print >> out, "(chip-state slipping)"
                     print >> out, "(slipping-dir %s)" % chip_dir
-                elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
+                elif bot == tw.SwitchWall_Open:
                     print >> out, "(switch-wall-open pos-%d-%d)" % (i,j)
-                elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
+                elif bot == tw.SwitchWall_Closed:
                     print >> out, "(switch-wall-closed pos-%d-%d)" % (i,j)
-                elif top == tw.Button_Green or bot == tw.Button_Green:
+                elif bot == tw.Button_Green:
                     print >> out, "(green-button pos-%d-%d)" % (i,j)
             elif top == tw.ICChip:
                 print >> out, "(chip pos-%d-%d)" % (i,j)
