@@ -139,7 +139,7 @@ def produce_objects( out, max_num ):
     blue - color
     yellow - color
     green - color
-    player-01 - player"""
+    """
     produce_numbers( out, max_num )
     produce_locations( out, 32, 32 )
     print >> out, ")"
@@ -191,7 +191,7 @@ def produce_predicates( out, x_max, y_max ):
             elif top == tw.Socket:
                 print >> out, "(socket pos-%d-%d)" % (i,j)
             elif top in (tw.Chip_North, tw.Chip_West, tw.Chip_South, tw.Chip_East):
-                print >> out, "(at player-01 pos-%d-%d)" % (i,j)
+                print >> out, "(at pos-%d-%d)" % (i,j)
                 if top == tw.Chip_East:
                     chip_dir = "dir-east"
                 elif top == tw.Chip_West:
@@ -330,5 +330,5 @@ def produce_goal( out ):
         for j in range( 32 ):
             top, bot = tw.get_tile(i,j)
             if top == tw.Exit :
-                print >> out, "(at player-01 pos-%d-%d)" % (i,j)
+                print >> out, "(at pos-%d-%d)" % (i,j)
     print >> out, ")"
