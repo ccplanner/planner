@@ -2,11 +2,7 @@
 
 import os
 from time import time
-
-var = "FAST_DOWNWARD_LOG"
-fd_log = ""
-if var in os.environ:
-    fd_log = os.environ[var]
+import config as cfg
 
 var = "FAST_DOWNWARD_HOME"
 if var not in os.environ:
@@ -34,21 +30,21 @@ def run( pddl):
 def translate( pddl, domain = 'pddl/domain.pddl', down_home=FAST_DOWNWARD_HOME):
     ''' run fast downward translate, produces output'''
     code = os.system("%s/src/translate/translate.py %s %s" % (down_home, domain, pddl) 
-            + (""">> %s""" % fd_log if fd_log != "" else ""))
+            + (""">> %s""" % cfg.opts.fast_downward_log if cfg.opts.fast_downward_quiet else ""))
     if code != 0:
         raise Exception("FD translate did not terminate normally")
 
 def preprocess(sas='output.sas', down_home=FAST_DOWNWARD_HOME):
     ''' do the preporcess stuff'''
     code = os.system("%s/src/preprocess/preprocess < %s" % (down_home, sas) 
-            + (""">> %s""" % fd_log if fd_log != "" else ""))
+            + (""">> %s""" % cfg.opts.fast_downward_log if cfg.opts.fast_downward_quiet else ""))
     if code != 0:
         raise Exception("FD preprocess did not terminate normally")
 
 def search(heurestic = "astar(blind())", problem='output', down_home=FAST_DOWNWARD_HOME):
     ''' do the search'''
     code = os.system("""%s/src/search/downward --search "%s" < %s""" % (down_home, heurestic, problem) 
-            + (""">> %s""" % fd_log if fd_log != "" else ""))
+            + (""">> %s""" % cfg.opts.fast_downward_log if cfg.opts.fast_downward_quiet else ""))
     if code != 0:
         raise Exception("FD search did not terminate normally")
 
@@ -62,6 +58,4 @@ def get_moves(plan='sas_plan'):
     lines = f.readlines()
     f.close()
     return lines
-
-# run('pddl/cc-agent1.pddl')
 

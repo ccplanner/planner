@@ -6,17 +6,17 @@ import downward
 import ast
 import os
 import re
+import config as cfg
 
-var = "PDDL_AGENT_VERBOSE"
 verbose = False
-if var in os.environ:
-    verbose = ast.literal_eval(os.environ[var])
 
 class cacheing_pddl_agent:
 
     def __init__(self):
         self.moves=[] # list of moves to carry out moves.pop() is next move
         self.tick = 0
+        global verbose
+        verbose = cfg.opts.pddl_agent_verbose
 
     def get_move(self):
         """return a move"""
@@ -80,6 +80,8 @@ def translate_move( move):
     '''translate a move for fast downward to tile world'''
     if "slip" in move:
        return tw.WAIT
+    if "slide-force-force" in move: # don't move when slide to preserve free move
+       return tw.WAIT
     if "west" in move:
        return tw.WEST
     if "east" in move:
@@ -137,7 +139,7 @@ def produce_objects( out, max_num ):
     blue - color
     yellow - color
     green - color
-    player-01 - player"""
+    """
     produce_numbers( out, max_num )
     produce_locations( out, 32, 32 )
     print >> out, ")"
@@ -189,7 +191,7 @@ def produce_predicates( out, x_max, y_max ):
             elif top == tw.Socket:
                 print >> out, "(socket pos-%d-%d)" % (i,j)
             elif top in (tw.Chip_North, tw.Chip_West, tw.Chip_South, tw.Chip_East):
-                print >> out, "(at player-01 pos-%d-%d)" % (i,j)
+                print >> out, "(at pos-%d-%d)" % (i,j)
                 if top == tw.Chip_East:
                     chip_dir = "dir-east"
                 elif top == tw.Chip_West:
@@ -207,14 +209,35 @@ def produce_predicates( out, x_max, y_max ):
                     print >> out, "(ice pos-%d-%d)" % (i,j)
                     print >> out, "(chip-state slipping)"
                     print >> out, "(slipping-dir %s)" % chip_dir
-                elif top == tw.SwitchWall_Open or bot == tw.SwitchWall_Open:
+                elif bot == tw.SwitchWall_Open:
                     print >> out, "(switch-wall-open pos-%d-%d)" % (i,j)
-                elif top == tw.SwitchWall_Closed or bot == tw.SwitchWall_Closed:
+                elif bot == tw.SwitchWall_Closed:
                     print >> out, "(switch-wall-closed pos-%d-%d)" % (i,j)
-                elif top == tw.Button_Green or bot == tw.Button_Green:
+                elif bot == tw.Button_Green:
                     print >> out, "(green-button pos-%d-%d)" % (i,j)
+                elif bot in (tw.Slide_North, tw.Slide_South, tw.Slide_East, tw.Slide_West):
+                    print >> out, "(force-floor pos-%d-%d)" % (i,j)
+                    print >> out, "(chip-state sliding)" #note not slipping
+                    if bot == tw.Slide_North:
+                        print >> out, "(slide-dir pos-%d-%d dir-north)" % (i,j)
+                    elif bot == tw.Slide_South:
+                        print >> out, "(slide-dir pos-%d-%d dir-south)" % (i,j)
+                    elif bot == tw.Slide_East:
+                        print >> out, "(slide-dir pos-%d-%d dir-east)" % (i,j)
+                    elif bot == tw.Slide_West:
+                        print >> out, "(slide-dir pos-%d-%d dir-west)" % (i,j)
             elif top == tw.ICChip:
                 print >> out, "(chip pos-%d-%d)" % (i,j)
+            elif top in (tw.Slide_North, tw.Slide_South, tw.Slide_East, tw.Slide_West):
+                print >> out, "(force-floor pos-%d-%d)" % (i,j)
+                if top == tw.Slide_North:
+                    print >> out, "(slide-dir pos-%d-%d dir-north)" % (i,j)
+                elif top == tw.Slide_South:
+                    print >> out, "(slide-dir pos-%d-%d dir-south)" % (i,j)
+                elif top == tw.Slide_East:
+                    print >> out, "(slide-dir pos-%d-%d dir-east)" % (i,j)
+                elif top == tw.Slide_West:
+                    print >> out, "(slide-dir pos-%d-%d dir-west)" % (i,j)
             elif top == tw.Key_Red:
                 print >> out, "(key pos-%d-%d red)" % (i,j)
             elif top == tw.Key_Blue:
@@ -309,5 +332,5 @@ def produce_goal( out ):
         for j in range( 32 ):
             top, bot = tw.get_tile(i,j)
             if top == tw.Exit :
-                print >> out, "(at player-01 pos-%d-%d)" % (i,j)
+                print >> out, "(at pos-%d-%d)" % (i,j)
     print >> out, ")"
