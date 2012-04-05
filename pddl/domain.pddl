@@ -281,7 +281,7 @@
    :parameters (?from ?to - location ?dir - direction)
    :precondition (and (at ?from)
                       (ice ?from)
-                      (or (ice ?to) (ice-wall ?to))
+                      (socket ?to)
                       (chip-state slipping)
                       (MOVE-DIR ?from ?to ?dir)
                       (slipping-dir ?dir)
