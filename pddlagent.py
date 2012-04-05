@@ -167,6 +167,14 @@ def produce_init( out, max_num ):
     print >> out, "(has-keys blue n%d)" % tw.get_keys()[1]
     print >> out, "(has-keys yellow n%d)" % tw.get_keys()[2]
     print >> out, "(has-keys green n%d)" % tw.get_keys()[3]
+    if tw.get_boots()[0]: # ICE
+	print >> out, "(has-boots ice)"
+    if tw.get_boots()[1]: # SUCTION
+	print >> out, "(has-boots slide)"
+    if tw.get_boots()[2]: # FIRE
+	print >> out, "(has-boots fire)"
+    if tw.get_boots()[3]: # WATER
+	print >> out, "(has-boots water)"
     produce_succesors(out, max_num) 
     produce_predicates(out, 32, 32)
     print >> out, ")"
