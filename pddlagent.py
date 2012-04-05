@@ -14,6 +14,7 @@ class cacheing_pddl_agent:
 
     def __init__(self):
         self.moves=[] # list of moves to carry out moves.pop() is next move
+        self.locs=[] # list of where chip will be after each move
         self.tick = 0
         global verbose
         verbose = cfg.opts.pddl_agent_verbose
@@ -24,7 +25,10 @@ class cacheing_pddl_agent:
         if verbose: print "agent (printing game status prior to move)"
         if verbose: print_game_status()
         self.tick += 1
-        if len( self.moves ) > 0:
+        if len( self.locs) > 2:
+                print self.locs[-1]
+                print self.locs[-2]
+        if len( self.moves ) > 0 and (self.locs.pop() == tw.chips_pos() or self.locs.pop() == tw.chips_pos()):
             move = self.moves.pop()
             if verbose: print "agent (cached move: %s)" % translate_tw_move(move)
             return move
@@ -46,9 +50,17 @@ class cacheing_pddl_agent:
             pddl_file.close()
         # get moves and translate them
         if verbose: print "agent (running planner)" 
-        self.moves= map( translate_move, downward.run( pddl_file_name ))
+        string_moves = downward.run( pddl_file_name )
+        self.moves= map( translate_move, string_moves)
+        self.locs= map( lambda x: tuple( map( 
+                       int, 
+                       filter( lambda s: "pos" in s, x.translate( None, "()").split())[0].split('-')[1:3] )),
+               string_moves) 
+        print self.locs
         if verbose: print "agent (moves from planner: %s)" % map( translate_tw_move, self.moves)
         self.moves.reverse() # reverse to that moves.pop() returns next move
+        self.locs.reverse() # reverse to that moves.pop() returns next move
+        self.locs.pop()
         move = self.moves.pop()
         if verbose: print "agent (move: %s)" % translate_tw_move(move)
         return move
