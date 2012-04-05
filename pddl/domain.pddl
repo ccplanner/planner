@@ -69,8 +69,6 @@
                       )
    :effect       (and (not (at ?from))
                       (at ?to)
-                      (not (thief ?to))
-                      (floor ?to)
                       (not (has-boots ice))
                       (not (has-boots water))
                       (not (has-boots fire))
