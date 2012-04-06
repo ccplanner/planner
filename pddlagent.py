@@ -192,9 +192,14 @@ def produce_predicates( out, x_max, y_max ):
             # TODO: improve this logic to be more readable
             # and maintinable
             #################
+                
+            
             treat_as_floor = (tw.Empty, tw.Exit, tw.HintButton, tw.Wall_North, tw.Wall_South, 
                             tw.Wall_East, tw.Wall_West, tw.Wall_Southeast)
             top, bot = tw.get_tile(i,j)
+            
+            produce_simple_conversions(out, top, i, j)
+            
             if top in treat_as_floor:
                 print >> out, "(floor pos-%d-%d)" % (i,j)
             elif top in (tw.HiddenWall_Perm, tw.HiddenWall_Temp, 
@@ -238,8 +243,6 @@ def produce_predicates( out, x_max, y_max ):
                         print >> out, "(slide-dir pos-%d-%d dir-east)" % (i,j)
                     elif bot == tw.Slide_West:
                         print >> out, "(slide-dir pos-%d-%d dir-west)" % (i,j)
-            elif top == tw.ICChip:
-                print >> out, "(chip pos-%d-%d)" % (i,j)
             elif top in (tw.Slide_North, tw.Slide_South, tw.Slide_East, tw.Slide_West):
                 print >> out, "(force-floor pos-%d-%d)" % (i,j)
                 if top == tw.Slide_North:
@@ -250,51 +253,9 @@ def produce_predicates( out, x_max, y_max ):
                     print >> out, "(slide-dir pos-%d-%d dir-east)" % (i,j)
                 elif top == tw.Slide_West:
                     print >> out, "(slide-dir pos-%d-%d dir-west)" % (i,j)
-            elif top == tw.Key_Red:
-                print >> out, "(key pos-%d-%d red)" % (i,j)
-            elif top == tw.Key_Blue:
-                print >> out, "(key pos-%d-%d blue)" % (i,j)
-            elif top == tw.Key_Yellow:
-                print >> out, "(key pos-%d-%d yellow)" % (i,j)
-            elif top == tw.Key_Green:
-                print >> out, "(key pos-%d-%d green)" % (i,j)
-            elif top == tw.Door_Red:
-                print >> out, "(door pos-%d-%d red)" % (i,j)
-            elif top == tw.Door_Blue:
-                print >> out, "(door pos-%d-%d blue)" % (i,j)
-            elif top == tw.Door_Yellow:
-                print >> out, "(door pos-%d-%d yellow)" % (i,j)
-            elif top == tw.Door_Green:
-                print >> out, "(door pos-%d-%d green)" % (i,j)
-            elif top == tw.Boots_Water:
-                print >> out, "(boots pos-%d-%d water)" % (i,j)
-            elif top == tw.Boots_Fire:
-                print >> out, "(boots pos-%d-%d fire)" % (i,j)
-            elif top == tw.Boots_Ice:
-                print >> out, "(boots pos-%d-%d ice)" % (i,j)
-            elif top == tw.Boots_Slide:
-                print >> out, "(boots pos-%d-%d slide)" % (i,j)
-            elif top == tw.Wall:
-                print >> out, "(wall pos-%d-%d)" % (i,j)
-            elif top == tw.Water:
-                print >> out, "(water pos-%d-%d)" % (i,j)
-            elif top == tw.Fire:
-                print >> out, "(fire pos-%d-%d)" % (i,j)
-            elif top == tw.PopupWall:
-                print >> out, "(popup-wall pos-%d-%d)" % (i,j)                
-            elif top == tw.Dirt:
-                print >> out, "(dirt pos-%d-%d)" % (i, j)                
-            elif top == tw.Burglar:
-                print >> out, "(thief pos-%d-%d)" % (i, j)
-            elif top == tw.Block_Static: #todo block north/etc
-                print >> out, "(block pos-%d-%d)" % (i, j)
-            elif top == tw.Bomb:
-                print >> out, "(bomb pos-%d-%d)" % (i, j)
             elif top == tw.Gravel:
                 print >> out, "(floor pos-%d-%d)" % (i, j)
                 print >> out, "(gravel pos-%d-%d)" % (i, j)
-            elif top == tw.Ice:
-                print >> out, "(ice pos-%d-%d)" % (i,j)
             elif top in (tw.IceWall_Northeast, tw.IceWall_Northwest, tw.IceWall_Southeast, tw.IceWall_Southwest):
                 print >> out, "(ice-wall pos-%d-%d)" % (i,j)
                 if top == tw.IceWall_Northeast: # Open North and East
@@ -361,3 +322,42 @@ def produce_goal( out ):
             if top == tw.Exit :
                 print >> out, "(at pos-%d-%d)" % (i,j)
     print >> out, ")"
+
+def produce_simple_conversions( out, top, i, j ):
+    '''convert tiles that are simply converted to a feature at a location'''
+    #TODO for efficiency these dictionaries should not be created every call
+    #TODO this is only simple conversion for top, what about bottom?
+    converts={
+        tw.ICChip:'chip',
+        tw.Wall: 'wall',
+        tw.Water: 'water',
+        tw.Fire: 'fire',
+        tw.Ice: 'ice',
+        tw.PopupWall: 'popup-wall',
+        tw.Dirt: 'dirt',
+        tw.Burglar: 'thief',
+        tw.Block_Static: 'block',
+        tw.Bomb: 'bomb'
+    }
+    if top in converts:
+        pddl_label = converts[top]
+        print >> out, "(%s pos-%d-%d)" % (pddl_label, i, j)
+
+    typed_converts={
+        tw.Key_Red: ('key', 'red'),
+        tw.Key_Blue: ('key', 'blue'),
+        tw.Key_Yellow: ('key', 'yellow'),
+        tw.Key_Green: ('key', 'green'),
+        tw.Door_Red: ('door', 'red'),
+        tw.Door_Blue: ('door', 'blue'),
+        tw.Door_Yellow: ('door', 'yellow'),
+        tw.Door_Green: ('door', 'green'),
+        tw.Boots_Water: ('boots', 'water'),
+        tw.Boots_Fire: ('boots', 'fire'),
+        tw.Boots_Ice: ('boots', 'ice'),
+        tw.Boots_Slide: ('boots', 'slide')
+    }
+        
+    if top in typed_converts:
+        (pddl_label, val) = typed_converts[top]
+        print >> out, "(%s pos-%d-%d %s)" % (pddl_label, i, j, val)
