@@ -48,9 +48,7 @@ class wrapper_agent:
             if self.skiped_moves >= 4 or tworld.chips_pos() != self.last_pos:
                 self.skiped_moves = 0
                 self.last_pos= tworld.chips_pos()
-                print 'here'
                 self.last_move=agent.get_move()
-                print 'here2'
             else:
                 self.skiped_moves += 1
             return self.last_move
