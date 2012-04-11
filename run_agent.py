@@ -7,6 +7,7 @@ import tworld
 import time
 import sys
 import config
+import traceback
 from optparse import OptionParser
 
 DEFAULT_LEVEL_SET="classical.dac"
@@ -47,13 +48,15 @@ class wrapper_agent:
             if self.skiped_moves >= 4 or tworld.chips_pos() != self.last_pos:
                 self.skiped_moves = 0
                 self.last_pos= tworld.chips_pos()
+                print 'here'
                 self.last_move=agent.get_move()
+                print 'here2'
             else:
                 self.skiped_moves += 1
             return self.last_move
         except Exception, e:
             print "EXCEPTION:"
-            print e
+            print traceback.format_exc()
             print "giving up and exiting, but you can try another level"
             sys.exit()
 

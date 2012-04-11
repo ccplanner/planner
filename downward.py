@@ -3,6 +3,7 @@
 import os
 from time import time
 import config as cfg
+import traceback
 
 var = "FAST_DOWNWARD_HOME"
 if var not in os.environ:
@@ -52,7 +53,7 @@ def get_moves(plan='sas_plan'):
     try:
         f = open(plan, 'r')
     except Exception, e:
-        print e
+        print traceback.format_exc()
         raise Exception("planner output file %s doesn't exist, which means the planner cannot solve this level" % plan)
 
     lines = f.readlines()
