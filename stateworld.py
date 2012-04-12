@@ -1,7 +1,7 @@
 import tworld as tw
 
 #TODO proper value here
-UnknownTile = 777
+UnknownTile = 255
 
 class StateWorld:
     def __init__(self):
@@ -25,15 +25,16 @@ class StateWorld:
         x,y=get_chips_location()
         
         #if near edge, screen won't center around you
-        x=max(min(x,31-4),4)
-        y=max(min(y,31-4),4)
+        x=max(min(x,31-vision),vision)
+        y=max(min(y,31-vision),vision)
         
         for x2 in range(x-vision, x+vision+1):
             for y2 in range(y-vision, y+vision+1):
                 top, bot = tw.get_tile(x2, y2)
-                self.top[y2][x2], self.bottom[y2][x2]=(top, bot)
-                if top==tw.Exit:
-                    self.can_seen_goal = True
+                self.top[y2][x2]=top
+                self.bottom[y2][x2]=bot
+                if top==tw.Exit or bot==tw.Exit:
+                    self.can_see_goal = True
     
     #return if our plan will still work
     def validate(self, plan):
@@ -73,6 +74,17 @@ class StateWorld:
         self.produce_predicates( out, 32, 32)
         print >> out, ")"
 
+    def print_board(self, x_max=32,y_max=32,print_bottom=True):
+        for y in range(y_max):
+            print "  ", 
+            for x in range(x_max):
+                print "%2x|" % self.get_tile(x,y)[0],
+            print "\n",
+            if print_bottom:
+                print "  ",
+                for x in range(x_max):
+                    print "%2x|" % self.get_tile(x,y)[1],
+                print "\n",
         
     def produce_predicates( self, out, x_max, y_max ):
         ''' produce locations'''
@@ -180,7 +192,8 @@ class StateWorld:
         
     def produce_goal( self, out ):
         ''' product locations'''
-        print >> out, "(:goal (or"
+        print >> out, "(:goal "
+        if not self.can_see_goal: print >> out, "( or "
         for i in range( 32 ):
             for j in range( 32 ):
                 top, bot = self.get_tile(i,j)
@@ -188,7 +201,8 @@ class StateWorld:
                 #for now if we cant see goal, set any tile that we haven't seen to be a goal, this is bad, temporary hack to cause exploration if we can't see real goal
                 if top == tw.Exit or (not self.can_see_goal and top == UnknownTile):
                     print >> out, "(at pos-%d-%d)" % (i,j)
-        print >> out, "))"
+        if not self.can_see_goal: print >> out, ")"
+        print >> out, ")"
 
 def produce_objects( out, max_num ):
     print >> out, """(:objects
@@ -292,9 +306,25 @@ def produce_simple_conversions( out, top, i, j ):
         print >> out, "(%s pos-%d-%d %s)" % (pddl_label, i, j, val)
 
 def get_chips_location():
+    chip = (tw.Chip_North, tw.Chip_West, tw.Chip_South, tw.Chip_East, tw.Swimming_Chip_West, tw.Swimming_Chip_East, tw.Swimming_Chip_North, tw.Swimming_Chip_South, tw.Pushing_Chip_North, tw.Pushing_Chip_West, tw.Pushing_Chip_East, tw.Pushing_Chip_South)
     for x in range(32):
         for y in range(32):
             top, bot = tw.get_tile(x,y)
-            if top in (tw.Chip_North, tw.Chip_West, tw.Chip_South, tw.Chip_East):
+            if top in chip:
                 return (x,y)
     print "error chip isn't on the board?"
+    print_board()
+
+def print_board(x_max=32,y_max=32,print_bottom=True):
+    """note x_max and y_max are then number of tiles printed in that 
+        direction"""
+    for y in range(y_max):
+        print "  ", 
+        for x in range(x_max):
+            print "%2x|" % self.get_tile(x,y)[0],
+        print "\n",
+        if print_bottom:
+            print "  ",
+            for x in range(x_max):
+                print "%2x|" % self.get_tile(x,y)[1],
+            print "\n",
