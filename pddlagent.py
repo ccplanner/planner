@@ -15,8 +15,8 @@ class cacheing_pddl_agent:
 
     def __init__(self):
         self.moves=[] # list of moves to carry out moves.pop() is next move
-        self.tick = 0
         self.state = StateWorld()
+        self.moves = []
         global verbose
         verbose = cfg.opts.pddl_agent_verbose
 
@@ -25,16 +25,19 @@ class cacheing_pddl_agent:
         if verbose: print "agent (move requested)"
         if verbose: print "agent (printing game status prior to move)"
         if verbose: print_game_status()
-        self.tick += 1
-        if len( self.moves ) > 0:
-            move = self.moves.pop()
-            if verbose: print "agent (cached move: %s)" % translate_tw_move(move)
+        
+        self.state.update()
+        if self.state.validate(self.moves): 
+            move = translate_move(self.moves.pop(0))
+            print "agent (cached move: %s)" % translate_tw_move(move)
             return move
-        if verbose: print "agent (no cached moves)" 
-        pddl_file_name = 'pddl/cc-agent%d.pddl' % self.tick
+        if verbose: print "agent (no cached moves or plan no longer valid)" 
+        
+        pddl_file_name = 'pddl/cc-agent%d.pddl' % self.state.tick
         pddl_file = open( pddl_file_name, 'w')
         self.state.write_pddl(pddl_file)
         pddl_file.close()
+        
         if verbose:
             pddl_file = open( pddl_file_name, 'r')
             print "agent (printing problem PDDL, but skipping moves and walls and such)"
@@ -46,12 +49,12 @@ class cacheing_pddl_agent:
                     if line.strip() != "": print "  " + ("  " * depth) + line.strip()
                     depth += opens - closes
             pddl_file.close()
+        
         # get moves and translate them
-        if verbose: print "agent (running planner)" 
-        self.moves= map( translate_move, downward.run( pddl_file_name ))
-        if verbose: print "agent (moves from planner: %s)" % map( translate_tw_move, self.moves)
-        self.moves.reverse() # reverse to that moves.pop() returns next move
-        move = self.moves.pop()
+        if verbose: print "agent (running planner)"
+        self.moves= downward.run( pddl_file_name )
+        if verbose: print "agent (moves from planner: %s)" % map(lambda(x): translate_tw_move(translate_move(x)), self.moves)
+        move=translate_move(self.moves.pop(0))
         if verbose: print "agent (move: %s)" % translate_tw_move(move)
         return move
 

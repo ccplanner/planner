@@ -20,6 +20,7 @@ class StateWorld:
     
     #return if our plan will still work
     def validate(self, plan):
+        print plan
         #TODO actually validate this
         return len(plan)>0
     
