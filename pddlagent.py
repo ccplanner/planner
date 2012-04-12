@@ -27,15 +27,37 @@ class cacheing_pddl_agent:
         if verbose: print_game_status()
         
         self.state.update()
-        if self.state.validate(self.moves): 
+        if self.state.validate(self.moves):             
             move = translate_move(self.moves.pop(0))
             print "agent (cached move: %s)" % translate_tw_move(move)
             return move
         if verbose: print "agent (no cached moves or plan no longer valid)" 
         
+        pddl_file_name = self.create_pddl_file(lambda(file):self.state.write_pddl(file))
+        
+        try:
+            # get moves and translate them
+            if verbose: print "agent (running planner)"
+            self.moves= downward.run( pddl_file_name )
+            print self.moves
+        except Exception, e:
+            if verbose: print "agent (no plan to reach goal, generating plan to reach unseen tile)"
+            
+            pddl_file_name = self.create_pddl_file(lambda(file):self.state.write_explore_pddl(file))
+        
+            if verbose: print "agent (running planner again)"
+            self.moves= downward.run( pddl_file_name )
+        
+        
+        if verbose: print "agent (moves from planner: %s)" % map(lambda(x): translate_tw_move(translate_move(x)), self.moves)
+        move=translate_move(self.moves.pop(0))
+        if verbose: print "agent (move: %s)" % translate_tw_move(move)
+        return move
+
+    def create_pddl_file(self, write_fcn):
         pddl_file_name = 'pddl/cc-agent%d.pddl' % self.state.tick
         pddl_file = open( pddl_file_name, 'w')
-        self.state.write_pddl(pddl_file)
+        write_fcn(pddl_file)
         pddl_file.close()
         
         if verbose:
@@ -49,14 +71,8 @@ class cacheing_pddl_agent:
                     if line.strip() != "": print "  " + ("  " * depth) + line.strip()
                     depth += opens - closes
             pddl_file.close()
-        
-        # get moves and translate them
-        if verbose: print "agent (running planner)"
-        self.moves= downward.run( pddl_file_name )
-        if verbose: print "agent (moves from planner: %s)" % map(lambda(x): translate_tw_move(translate_move(x)), self.moves)
-        move=translate_move(self.moves.pop(0))
-        if verbose: print "agent (move: %s)" % translate_tw_move(move)
-        return move
+        return pddl_file_name
+
 
 def print_game_status():
     print "game (printing board, top tiles only)"

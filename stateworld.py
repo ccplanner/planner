@@ -1,7 +1,7 @@
 import tworld as tw
 import config as cfg
 
-#TODO proper value here
+#TODO proper value here maybe put this in py_binding.c instead
 UnknownTile = 255
 
 class StateWorld:
@@ -15,7 +15,7 @@ class StateWorld:
 #         self.keys = [0]*4
 #         self.boots = [false]*4
 #         self.chips = 0
-        self.can_see_goal = False
+        self.can_see_goal = True
     
     def update(self):
         '''update our state based on the things we can see'''
@@ -43,6 +43,7 @@ class StateWorld:
         return len(plan)>0
     
     def write_pddl(self, out):
+        self.print_board(10,10)
         """produce the pddle for the board in it's current state"""
         print >> out, """(define (problem p01-%d-cc)
           (:domain chips-challenge)
@@ -51,6 +52,17 @@ class StateWorld:
         produce_objects( out, max_num)
         self.produce_init( out, max_num)
         self.produce_goal( out)
+        print >> out, ")"
+
+    def write_explore_pddl(self, out):
+        """produce the pddl for the board in it's current state to explore"""
+        print >> out, """(define (problem p01-%d-cc)
+          (:domain chips-challenge)
+          """ % self.tick
+        max_num = tw.chips_needed() + 5
+        produce_objects( out, max_num)
+        self.produce_init( out, max_num)
+        self.produce_explore_goal( out)
         print >> out, ")"
 
     def produce_init( self, out, max_num ):
@@ -95,7 +107,7 @@ class StateWorld:
                 # and maintinable
                 #################
                 
-                treat_as_floor = (UnknownTile, tw.Empty, tw.Exit, tw.HintButton, tw.Wall_North, tw.Wall_South, 
+                treat_as_floor = (tw.Empty, tw.Exit, tw.HintButton, tw.Wall_North, tw.Wall_South, 
                                 tw.Wall_East, tw.Wall_West, tw.Wall_Southeast)
                 top, bot = self.get_tile(i, j)
                 
@@ -192,18 +204,26 @@ class StateWorld:
         
     def produce_goal( self, out ):
         ''' product locations'''
-        print >> out, "(:goal "
-        if not self.can_see_goal: print >> out, "( or "
-        for i in range( 32 ):
-            for j in range( 32 ):
-                top, bot = self.get_tile(i,j)
-                
-                #for now if we cant see goal, set any tile that we haven't seen to be a goal, this is bad, temporary hack to cause exploration if we can't see real goal
-                if top == tw.Exit or (not self.can_see_goal and top == UnknownTile):
-                    print >> out, "(at pos-%d-%d)" % (i,j)
-        if not self.can_see_goal: print >> out, ")"
-        print >> out, ")"
-
+        goals = [(x,y) for x in range(32) for y in range(32) if self.get_tile(x, y)[0]==tw.Exit]
+        self.write_goals(out, goals)
+    
+    def produce_explore_goal( self, out ):
+        '''if the goal is to explore, we do this by trying to move to any square adjacent to an unseen tile'''
+        goal_tiles = [(x+dx,y+dy) for x in range(32) for y in range(32) if self.get_tile(x, y)[0]==UnknownTile for dx in [-1,1] if x+dx>=0 and x+dx<32 for dy in [-1,1] if y+dy>=0 and y+dy<32 and self.get_tile(x+dx, y+dy)[0] != UnknownTile]
+        goal_tiles = list(set(goal_tiles))
+        self.write_goals(out, goal_tiles)
+    
+    def write_goals( self, out, goals):
+        '''write the goals, each goal is a location that moving to is the goal'''
+        if len(goals)==1:
+            print >> out, "(:goal (at pos-%d-%d) )" % goals[0]
+        else:
+            print >> out, "(:goal (or "
+            for coords in goals:
+                print >> out, "(at pos-%d-%d)" % coords
+            print >> out, ") )"
+    
+        
 def produce_objects( out, max_num ):
     print >> out, """(:objects
     dir-east - direction
