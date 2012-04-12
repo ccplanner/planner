@@ -1,22 +1,39 @@
 import tworld as tw
 
+#TODO proper value here
+UnknownTile = 777
+
 class StateWorld:
     def __init__(self):
         #TODO hardcoded 32 board size
         #default is Floor
-        self.top = [[tw.Empty]*32 for x in range(32)]
-        self.bottom = [[tw.Empty]*32 for x in range(32)]
+        self.top = [[UnknownTile]*32 for x in range(32)]
+        self.bottom = [[UnknownTile]*32 for x in range(32)]
         self.tick = 0
 #for these we always know, don't need to track
 #         self.keys = [0]*4
 #         self.boots = [false]*4
 #         self.chips = 0
+        self.can_see_goal = False
     
     #update our state based on the things we can see
     #TODO hardcoded vision size
     def update(self):
         vision=4 #from chip in all direction
         self.tick += 1
+        
+        x,y=get_chips_location()
+        
+        #if near edge, screen won't center around you
+        x=max(min(x,31-4),4)
+        y=max(min(y,31-4),4)
+        
+        for x2 in range(x-vision, x+vision+1):
+            for y2 in range(y-vision, y+vision+1):
+                top, bot = tw.get_tile(x2, y2)
+                self.top[y2][x2], self.bottom[y2][x2]=(top, bot)
+                if top==tw.Exit:
+                    self.can_seen_goal = True
     
     #return if our plan will still work
     def validate(self, plan):
@@ -66,9 +83,9 @@ class StateWorld:
                 # and maintinable
                 #################
                 
-                treat_as_floor = (tw.Empty, tw.Exit, tw.HintButton, tw.Wall_North, tw.Wall_South, 
+                treat_as_floor = (UnknownTile, tw.Empty, tw.Exit, tw.HintButton, tw.Wall_North, tw.Wall_South, 
                                 tw.Wall_East, tw.Wall_West, tw.Wall_Southeast)
-                top, bot = tw.get_tile(i,j)
+                top, bot = self.get_tile(i, j)
                 
                 produce_simple_conversions(out, top, i, j)
                 
@@ -150,23 +167,28 @@ class StateWorld:
                 elif top == tw.Button_Green or bot == tw.Button_Green:
                     print >> out, "(green-button pos-%d-%d)" % (i,j)
                 # set up movement
-                if i != 0 and can_move_east_west(tw.get_tile(i-1,j),tw.get_tile(i,j)) :
+                if i != 0 and can_move_east_west(self.get_tile(i-1,j),self.get_tile(i,j)) :
                     print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-east)" % (i-1,j, i,j)
                     print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-west)" % (i,j, i-1,j)
-                if j != 0 and can_move_north_south(tw.get_tile(i,j-1), tw.get_tile(i,j) ):
+                if j != 0 and can_move_north_south(self.get_tile(i,j-1), self.get_tile(i,j) ):
                     print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-south)" % (i,j-1, i,j)
                     print >> out, "(MOVE-DIR pos-%d-%d pos-%d-%d dir-north)" % (i,j, i,j-1)
+    
+    def get_tile( self, x, y):
+        return (self.top[y][x], self.bottom[y][x])
         
         
     def produce_goal( self, out ):
         ''' product locations'''
-        print >> out, "(:goal "
+        print >> out, "(:goal (or"
         for i in range( 32 ):
             for j in range( 32 ):
-                top, bot = tw.get_tile(i,j)
-                if top == tw.Exit :
+                top, bot = self.get_tile(i,j)
+                
+                #for now if we cant see goal, set any tile that we haven't seen to be a goal, this is bad, temporary hack to cause exploration if we can't see real goal
+                if top == tw.Exit or (not self.can_see_goal and top == UnknownTile):
                     print >> out, "(at pos-%d-%d)" % (i,j)
-        print >> out, ")"
+        print >> out, "))"
 
 def produce_objects( out, max_num ):
     print >> out, """(:objects
@@ -268,3 +290,11 @@ def produce_simple_conversions( out, top, i, j ):
     if top in typed_converts:
         (pddl_label, val) = typed_converts[top]
         print >> out, "(%s pos-%d-%d %s)" % (pddl_label, i, j, val)
+
+def get_chips_location():
+    for x in range(32):
+        for y in range(32):
+            top, bot = tw.get_tile(x,y)
+            if top in (tw.Chip_North, tw.Chip_West, tw.Chip_South, tw.Chip_East):
+                return (x,y)
+    print "error chip isn't on the board?"
