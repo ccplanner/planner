@@ -1,4 +1,5 @@
 import tworld as tw
+import config as cfg
 
 #TODO proper value here
 UnknownTile = 255
@@ -16,10 +17,10 @@ class StateWorld:
 #         self.chips = 0
         self.can_see_goal = False
     
-    #update our state based on the things we can see
-    #TODO hardcoded vision size
     def update(self):
-        vision=4 #from chip in all direction
+        '''update our state based on the things we can see'''
+    
+        vision = cfg.opts.vision
         self.tick += 1
         
         x,y=get_chips_location()
@@ -28,8 +29,8 @@ class StateWorld:
         x=max(min(x,31-vision),vision)
         y=max(min(y,31-vision),vision)
         
-        for x2 in range(x-vision, x+vision+1):
-            for y2 in range(y-vision, y+vision+1):
+        for x2 in range(max(0, x-vision), min(32, x+vision+1)):
+            for y2 in range(max(0, y-vision), min(32, y+vision+1)):
                 top, bot = tw.get_tile(x2, y2)
                 self.top[y2][x2]=top
                 self.bottom[y2][x2]=bot
@@ -38,7 +39,6 @@ class StateWorld:
     
     #return if our plan will still work
     def validate(self, plan):
-        print plan
         #TODO actually validate this
         return len(plan)>0
     
