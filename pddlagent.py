@@ -41,12 +41,25 @@ class cacheing_pddl_agent:
             self.moves= downward.run( pddl_file_name )
             print self.moves
         except Exception, e:
-            if verbose: print "agent (no plan to reach goal, generating plan to reach unseen tile)"
+            if not cfg.opts.agent_memoryless:
+                if verbose: print "agent (no plan to reach goal, generating plan to reach any unseen tile)"
+                
+                pddl_file_name = self.create_pddl_file(lambda(file):self.state.write_explore_pddl(file))
             
-            pddl_file_name = self.create_pddl_file(lambda(file):self.state.write_explore_pddl(file))
-        
-            if verbose: print "agent (running planner again)"
-            self.moves= downward.run( pddl_file_name )
+                if verbose: print "agent (running planner again)"
+                self.moves= downward.run( pddl_file_name )
+            else: #memoryless
+                if verbose: print "agent (no plan to reach goal, generating plan to reach RANDOM unseen tile)"
+                while True:
+                    pddl_file_name = self.create_pddl_file(lambda(file):self.state.write_random_explore_pddl(file))
+                
+                    if verbose: print "agent (running planner again)"
+                    try:
+                        self.moves= downward.run( pddl_file_name )
+                        break
+                    except Exception, e:
+                        if verbose: print "no plan found"
+                        
         
         
         if verbose: print "agent (moves from planner: %s)" % map(lambda(x): translate_tw_move(translate_move(x)), self.moves)

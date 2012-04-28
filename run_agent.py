@@ -18,6 +18,8 @@ parser.add_option("-l", "--level", dest="level_num", type="int",
         help="specify the level number to play [1]", metavar="NUMBER", default=1)
 parser.add_option("-v", "--vision", dest="vision", type="int",
         help="specify the distance chip can see (4 for standard rules) [32]", metavar="NUMBER", default=32)
+parser.add_option("","--memoryless", action="store_true", dest="agent_memoryless", 
+        default=False, help="turn off memory, choose exploring direction randomly [false]")
 parser.add_option("","--pddl-agent-verbose", action="store_true", dest="pddl_agent_verbose", 
         default=False, help="print extra log messages from the PDDL agent [false]")
 parser.add_option("","--fast-downward-quiet", action="store_true",dest="fast_downward_quiet", 
