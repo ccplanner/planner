@@ -1,5 +1,6 @@
 import tworld as tw
 import config as cfg
+import random
 
 #TODO proper value here maybe put this in py_binding.c instead
 UnknownTile = 255
@@ -238,7 +239,7 @@ class StateWorld:
         '''if the goal is to explore, we do this by trying to move to any square adjacent to an unseen tile'''
         goal_tiles = [(x+dx,y+dy) for x in range(32) for y in range(32) if self.get_tile(x, y)[0]==UnknownTile for dx in [-1,1] if x+dx>=0 and x+dx<32 for dy in [-1,1] if y+dy>=0 and y+dy<32 and self.get_tile(x+dx, y+dy)[0] != UnknownTile]
         goal_tiles = list(set(goal_tiles))
-        goal_tiles = goal_tiles[random.randint(0, len(goal_tiles)-1)];
+        goal_tiles = [goal_tiles[random.randint(0, len(goal_tiles)-1)]];
         self.write_goals(out, goal_tiles)
 
     
