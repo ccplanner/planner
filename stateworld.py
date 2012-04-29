@@ -1,5 +1,6 @@
 import tworld as tw
 import config as cfg
+import random
 
 #TODO proper value here maybe put this in py_binding.c instead
 UnknownTile = 255
@@ -8,8 +9,7 @@ class StateWorld:
     def __init__(self):
         #TODO hardcoded 32 board size
         #default is Floor
-        self.top = [[UnknownTile]*32 for x in range(32)]
-        self.bottom = [[UnknownTile]*32 for x in range(32)]
+        self.init_board_knowledge()
         self.tick = 0
 #for these we always know, don't need to track
 #         self.keys = [0]*4
@@ -17,8 +17,16 @@ class StateWorld:
 #         self.chips = 0
         self.can_see_goal = True
     
+    def init_board_knowledge(self):
+        self.top = [[UnknownTile]*32 for x in range(32)]
+        self.bottom = [[UnknownTile]*32 for x in range(32)]
+
+    
     def update(self):
         '''update our state based on the things we can see'''
+        
+        if cfg.opts.agent_memoryless:
+            self.init_board_knowledge()
     
         vision = cfg.opts.vision
         self.tick += 1
@@ -64,6 +72,19 @@ class StateWorld:
         self.produce_init( out, max_num)
         self.produce_explore_goal( out)
         print >> out, ")"
+
+    def write_random_explore_pddl(self, out):
+    #ugly code duplication, but project due in 2 days!
+        """produce the pddl for the board in it's current state to explore"""
+        print >> out, """(define (problem p01-%d-cc)
+          (:domain chips-challenge)
+          """ % self.tick
+        max_num = tw.chips_needed() + 5
+        produce_objects( out, max_num)
+        self.produce_init( out, max_num)
+        self.produce_random_explore_goal( out)
+        print >> out, ")"
+
 
     def produce_init( self, out, max_num ):
         """Produce intial state"""
@@ -212,6 +233,15 @@ class StateWorld:
         goal_tiles = [(x+dx,y+dy) for x in range(32) for y in range(32) if self.get_tile(x, y)[0]==UnknownTile for dx in [-1,1] if x+dx>=0 and x+dx<32 for dy in [-1,1] if y+dy>=0 and y+dy<32 and self.get_tile(x+dx, y+dy)[0] != UnknownTile]
         goal_tiles = list(set(goal_tiles))
         self.write_goals(out, goal_tiles)
+
+    def produce_random_explore_goal( self, out ):
+    #more ugly code duplication!
+        '''if the goal is to explore, we do this by trying to move to any square adjacent to an unseen tile'''
+        goal_tiles = [(x+dx,y+dy) for x in range(32) for y in range(32) if self.get_tile(x, y)[0]==UnknownTile for dx in [-1,1] if x+dx>=0 and x+dx<32 for dy in [-1,1] if y+dy>=0 and y+dy<32 and self.get_tile(x+dx, y+dy)[0] != UnknownTile]
+        goal_tiles = list(set(goal_tiles))
+        goal_tiles = [goal_tiles[random.randint(0, len(goal_tiles)-1)]];
+        self.write_goals(out, goal_tiles)
+
     
     def write_goals( self, out, goals):
         '''write the goals, each goal is a location that moving to is the goal'''
