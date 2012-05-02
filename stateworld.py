@@ -146,7 +146,7 @@ class StateWorld:
                                 tw.Wall_East, tw.Wall_West, tw.Wall_Southeast)
                 top, bot = self.get_tile(i, j)
                 
-                produce_simple_conversions(out, top, i, j)
+                produce_simple_conversions(out, (top, bot), i, j)
                 
                 if top in treat_as_floor:
                     print >> out, "(floor pos-%d-%d)" % (i,j)
@@ -155,15 +155,17 @@ class StateWorld:
                     print >> out, "(floor pos-%d-%d)" % (i,j)
                 elif top == tw.Socket:
                     print >> out, "(socket pos-%d-%d)" % (i,j)
-                elif top in (tw.Chip_North, tw.Chip_West, tw.Chip_South, tw.Chip_East):
+                elif top in (tw.Chip_North, tw.Chip_West, tw.Chip_South, tw.Chip_East,
+                             tw.Swimming_Chip_North, tw.Swimming_Chip_West, 
+			     tw.Swimming_Chip_South, tw.Swimming_Chip_East):
                     print >> out, "(at pos-%d-%d)" % (i,j)
-                    if top == tw.Chip_East:
+                    if top in (tw.Chip_East, tw.Swimming_Chip_East):
                         chip_dir = "dir-east"
-                    elif top == tw.Chip_West:
+                    elif top in (tw.Chip_West, tw.Swimming_Chip_West):
                         chip_dir = "dir-west"
-                    elif top == tw.Chip_South:
+                    elif top in (tw.Chip_South, tw.Swimming_Chip_South):
                         chip_dir = "dir-south"
-                    elif top == tw.Chip_North:
+                    elif top in (tw.Chip_North, tw.Swimming_Chip_North):
                         chip_dir = "dir-north"
     
                     if bot in treat_as_floor:
@@ -343,7 +345,7 @@ def both_walls( (a_top, a_bot), (b_top, b_bot) ):
     return (a_top == tw.Wall or a_bot == tw.Wall ) and \
            (b_bot == tw.Wall or b_bot == tw.Wall )
 
-def produce_simple_conversions( out, top, i, j ):
+def produce_simple_conversions( out, (top,bot), i, j ):
     '''convert tiles that are simply converted to a feature at a location'''
     #TODO for efficiency these dictionaries should not be created every call
     #TODO this is only simple conversion for top, what about bottom?
@@ -361,6 +363,9 @@ def produce_simple_conversions( out, top, i, j ):
     }
     if top in converts:
         pddl_label = converts[top]
+        print >> out, "(%s pos-%d-%d)" % (pddl_label, i, j)
+    if bot in converts:
+        pddl_label = converts[bot]
         print >> out, "(%s pos-%d-%d)" % (pddl_label, i, j)
 
     typed_converts={
@@ -380,6 +385,9 @@ def produce_simple_conversions( out, top, i, j ):
         
     if top in typed_converts:
         (pddl_label, val) = typed_converts[top]
+        print >> out, "(%s pos-%d-%d %s)" % (pddl_label, i, j, val)
+    if bot in typed_converts:
+        (pddl_label, val) = typed_converts[bot]
         print >> out, "(%s pos-%d-%d %s)" % (pddl_label, i, j, val)
 
 def get_chips_location():
