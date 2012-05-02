@@ -14,7 +14,7 @@ class StateWorld:
 #for these we always know, don't need to track
 #         self.keys = [0]*4
 #         self.boots = [false]*4
-#         self.chips = 0
+        self.chips_visable = 0
         self.can_see_goal = True
     
     def init_board_knowledge(self):
@@ -37,6 +37,7 @@ class StateWorld:
         x=max(min(x,31-vision),vision)
         y=max(min(y,31-vision),vision)
         
+        self.chips_visable=0
         for x2 in range(max(0, x-vision), min(32, x+vision+1)):
             for y2 in range(max(0, y-vision), min(32, y+vision+1)):
                 top, bot = tw.get_tile(x2, y2)
@@ -44,6 +45,8 @@ class StateWorld:
                 self.bottom[y2][x2]=bot
                 if top==tw.Exit or bot==tw.Exit:
                     self.can_see_goal = True
+                if tw.ICChip in (top, bot):
+                    self.chips_visable += 1
     
     #return if our plan will still work
     def validate(self, plan):
@@ -73,6 +76,17 @@ class StateWorld:
         self.produce_explore_goal( out)
         print >> out, ")"
 
+    def write_chips_pddl(self, out):
+        """produce the pddl for the board in it's current state to explore"""
+        print >> out, """(define (problem p01-%d-cc)
+          (:domain chips-challenge)
+          """ % self.tick
+        max_num = tw.chips_needed() + 5
+        produce_objects( out, max_num)
+        self.produce_init( out, max_num)
+        self.produce_chips_goal( out)
+        print >> out, ")"
+        
     def write_random_explore_pddl(self, out):
     #ugly code duplication, but project due in 2 days!
         """produce the pddl for the board in it's current state to explore"""
@@ -232,6 +246,19 @@ class StateWorld:
         '''if the goal is to explore, we do this by trying to move to any square adjacent to an unseen tile'''
         goal_tiles = [(x+dx,y+dy) for x in range(32) for y in range(32) if self.get_tile(x, y)[0]==UnknownTile for dx in [-1,1] if x+dx>=0 and x+dx<32 for dy in [-1,1] if y+dy>=0 and y+dy<32 and self.get_tile(x+dx, y+dy)[0] != UnknownTile]
         goal_tiles = list(set(goal_tiles))
+        self.write_goals(out, goal_tiles)
+
+    def produce_explore_chips_goal( self, out ):
+        '''if the goal is to explore and pick up chips, we do this by trying to move to any square adjacent to an unseen tile'''
+        explore_tiles = set( [(x+dx,y+dy) for x in range(32) for y in range(32) if self.get_tile(x, y)[0]==UnknownTile for dx in [-1,1] if x+dx>=0 and x+dx<32 for dy in [-1,1] if y+dy>=0 and y+dy<32 and self.get_tile(x+dx, y+dy)[0] != UnknownTile])
+        chip_tiles = set( [(x,y) for x in range(32) for y in range(32) if self.get_tile(x, y)[0]==tw.ICChip] )
+        goal_tiles = list(explore_tiles.union(chip_tiles))
+        self.write_goals(out, goal_tiles)
+
+    def produce_chips_goal( self, out ):
+        '''if the goal is to and pick up chips, we do this by trying to move to any square adjacent to an unseen tile'''
+        chip_tiles = set( [(x,y) for x in range(32) for y in range(32) if self.get_tile(x, y)[0]==tw.ICChip] )
+        goal_tiles = list(chip_tiles)
         self.write_goals(out, goal_tiles)
 
     def produce_random_explore_goal( self, out ):

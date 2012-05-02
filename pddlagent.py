@@ -41,32 +41,50 @@ class cacheing_pddl_agent:
         if verbose: print "agent (no cached moves or plan no longer valid)" 
         
         pddl_file_name = self.create_pddl_file(lambda(file):self.state.write_pddl(file))
-        
+       
+        found_plan=False #can we get to the exit
         try:
             # get moves and translate them
             if verbose: print "agent (running planner)"
             string_moves= downward.run( pddl_file_name )
+            found_plan = True
             print string_moves
         except Exception, e:
-            if not cfg.opts.agent_memoryless:
-                if verbose: print "agent (no plan to reach goal, generating plan to reach any unseen tile)"
-                
-                pddl_file_name = self.create_pddl_file(lambda(file):self.state.write_explore_pddl(file))
+            found_plan = False
+            if verbose: 
+                print e
+                print "Caught exception"
+        
+        if not found_plan:
+            assert (not cfg.opts.agent_memoryless)
+            if verbose: print "agent (no plan to reach goal, generating plan to reach any chips)"
             
-                if verbose: print "agent (running planner again)"
+            pddl_file_name = self.create_pddl_file(lambda(file):self.state.write_chips_pddl(file))
+        
+            if verbose: print "agent (running planner again)"
+            try:
                 string_moves= downward.run( pddl_file_name )
-            else: #memoryless
-                if verbose: print "agent (no plan to reach goal, generating plan to reach RANDOM unseen tile)"
-                while True:
-                    pddl_file_name = self.create_pddl_file(lambda(file):self.state.write_random_explore_pddl(file))
-                
-                    if verbose: print "agent (running planner again)"
-                    try:
-                        string_moves= downward.run( pddl_file_name )
-                        break
-                    except Exception, e:
-                        if verbose: print "no plan found"
-                        
+                found_plan = True
+            except Exception, e:
+                if verbose: 
+                    print e
+                    print "Chips plan faild"
+         
+        if not found_plan:
+            if verbose: print "agent (no plan to reach goal, generating plan to reach any explore tile)"
+            
+            pddl_file_name = self.create_pddl_file(lambda(file):self.state.write_explore_pddl(file))
+        
+            if verbose: print "agent (running planner again)"
+            try:
+                string_moves= downward.run( pddl_file_name )
+                found_plan = True
+            except Exception, e:
+                if verbose: 
+                    print e
+                    print "Chips plan faild"              
+                # nothing we can do now
+                return tw.WAIT
         
         # setup moves
         self.moves= map( translate_move, string_moves)
